@@ -44,6 +44,10 @@ export interface TimingSignal {
 
 // ── Helpers ─────────────────────────────────────────────────────
 
+// Stable volume baseline used for verdict computation (keeps signal from flipping mid-refresh)
+// Recent 6-month average from MOLIT data: ~5,000건/월 = 77% of avg → yellow
+const STABLE_VOLUME_PCT = 77
+
 function getVolumeSignal(
   volume: { month: string; volume: number }[],
   avg: number,
@@ -52,14 +56,18 @@ function getVolumeSignal(
   const sorted = [...volume].sort((a, b) => a.month.localeCompare(b.month))
   // Find last month with volume > 2000 (incomplete months are usually < 2000 in early weeks)
   const last = [...sorted].reverse().find(v => v.volume > 2000)
-  const pct   = last ? Math.round((last.volume / avg) * 100) : 0
+  const livePct = last ? Math.round((last.volume / avg) * 100) : null
 
+  // Use stable baseline for status (affects verdict); live value shown in currentValue display
+  const pct    = livePct ?? STABLE_VOLUME_PCT
   const status: SignalStatus = pct >= 90 ? 'green' : pct >= 70 ? 'yellow' : 'red'
 
   return {
     id:           'volume',
     name:         '월별 거래량',
-    currentValue: last ? `${last.volume.toLocaleString()}건/월 (평년比 ${pct}%)` : '데이터 없음',
+    currentValue: last
+      ? `${last.volume.toLocaleString()}건/월 (평년比 ${livePct}%)`
+      : `평년比 약 ${STABLE_VOLUME_PCT}% (DB 로딩 중)`,
     status,
     statusLabel:  status === 'green' ? '정상 회복' : status === 'yellow' ? '회복 중' : '위축',
     forBuyer:     status === 'green'
@@ -68,7 +76,7 @@ function getVolumeSignal(
       ? '거래량 회복 중. 시장이 서서히 열리고 있어 매수 협상력이 아직 유효.'
       : '시장 동결 상태. 셀러-바이어 교착으로 가격 발견 왜곡 가능.',
     targetToFlip: `월 ${Math.round(avg * 0.9).toLocaleString()}건 이상 (평년比 90%) → green`,
-    isReal:       true,
+    isReal:       last !== undefined,
     source:       '국토교통부 실거래가 DB',
     riskIfIgnored: 'wait_risk',
   }
