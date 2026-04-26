@@ -41,7 +41,7 @@ export default function Dashboard() {
     ])
 
     // Server is still seeding (cold start) — retry in 4 s
-    if (d.seeding || d.data?.length === 0) {
+    if (d.seeding || d.data?.length === 0 || tr.data?.length < 3) {
       setSeeding(true)
       setTimeout(load, 4000)
       return
