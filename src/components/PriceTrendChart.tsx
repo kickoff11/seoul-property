@@ -31,19 +31,21 @@ export default function PriceTrendChart({ data, title }: Props) {
     <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
       {title && <h3 className="text-sm font-semibold text-slate-300 mb-4">{title}</h3>}
       <ResponsiveContainer width="100%" height={260}>
-        <LineChart data={formatted} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+        <LineChart data={formatted} margin={{ top: 5, right: 4, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 10 }} interval="preserveStartEnd" />
           <YAxis
             yAxisId="price"
             orientation="left"
-            tick={{ fill: '#94a3b8', fontSize: 11 }}
+            width={44}
+            tick={{ fill: '#94a3b8', fontSize: 10 }}
             tickFormatter={v => `${(v / 10000).toFixed(0)}억`}
           />
           <YAxis
             yAxisId="count"
             orientation="right"
-            tick={{ fill: '#94a3b8', fontSize: 11 }}
+            width={38}
+            tick={{ fill: '#94a3b8', fontSize: 10 }}
             tickFormatter={v => `${v}건`}
           />
           <Tooltip
