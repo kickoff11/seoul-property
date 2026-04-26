@@ -197,6 +197,10 @@ export function getMonthlyVolume(): { month: string; volume: number }[] {
 
 export function getMonthlyTrends(lawdCd?: string) {
   const where = lawdCd ? `WHERE lawd_cd = '${lawdCd.replace(/'/g, '')}'` : ''
+  // Minimum transaction count per month to exclude partially-loaded months.
+  // Seoul-wide: a complete month has 2,000+ transactions; use 500 as floor.
+  // District-specific: a complete month has 50+; use 20 as floor.
+  const minCount = lawdCd ? 20 : 500
   return getDb().prepare(`
     SELECT
       deal_year  AS dealYear,
@@ -208,7 +212,9 @@ export function getMonthlyTrends(lawdCd?: string) {
       MAX(amount) AS maxAmount
     FROM transactions ${where}
     GROUP BY deal_year, deal_month
+    HAVING count >= ${minCount}
     ORDER BY deal_year ASC, deal_month ASC
+    LIMIT 12
   `).all() as {
     dealYear: number; dealMonth: number; count: number
     avgAmount: number; avgPricePerM2: number
