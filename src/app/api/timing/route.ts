@@ -274,13 +274,29 @@ export async function GET() {
     ? `한국은행 ECOS API (기준일: ${liveRates.asOf})`
     : '한국은행 기준금리 + 은행연합회 주담대 금리 추정 (최신 공표치)'
 
-  // PIR — live from MOLIT transactions if available
+  // PIR — stable published estimate drives signal STATUS (verdict)
+  // Live MOLIT median shown in currentValue display only (informational)
+  const STABLE_PIR    = 27.1   // 한국부동산원·통계청 보고서 기반
+  const STABLE_BURDEN = 61.3   // static fallback monthly burden %
   const livePir = medianPriceMW !== null
     ? parseFloat((medianPriceMW / MEDIAN_HOUSEHOLD_INCOME_MAN_WON).toFixed(1))
-    : 27.1  // static fallback
+    : null
   const liveMonthlyBurden = medianPriceMW !== null
     ? computeMonthlyBurden(medianPriceMW, mortgageRate)
-    : 61.3  // static fallback
+    : null
+
+  // Build affordability signal using STABLE values for status (deterministic verdict)
+  // but override currentValue to show live data when available
+  const affordSignal: TimingSignal = {
+    ...getAffordabilitySignal(STABLE_PIR, STABLE_BURDEN),
+    currentValue: livePir !== null && liveMonthlyBurden !== null
+      ? `PIR ${livePir}배 / 월 상환 부담 ${liveMonthlyBurden}%`
+      : `PIR ${STABLE_PIR}배 / 월 상환 부담 ${STABLE_BURDEN}%`,
+    isReal: medianPriceMW !== null,
+    source: medianPriceMW !== null
+      ? '국토교통부 실거래가 중위가격 ÷ 통계청 중위가구소득 (실시간 계산)'
+      : '한국부동산원·통계청 보고서 기반 추정',
+  }
 
   // Build signals
   const signals: TimingSignal[] = [
@@ -290,11 +306,7 @@ export async function GET() {
     { ...getInterestRateSignal(baseRate, mortgageRate), isReal: !!liveRates, source: ratesSource },
     getSupplySignal(SUPPLY_2026, DEMAND_BASE),
     getPolicySignal(),
-    { ...getAffordabilitySignal(livePir, liveMonthlyBurden),
-      isReal: medianPriceMW !== null,
-      source: medianPriceMW !== null
-        ? '국토교통부 실거래가 중위가격 ÷ 통계청 중위가구소득 (실시간 계산)'
-        : '한국부동산원·통계청 보고서 기반 추정' },
+    affordSignal,
   ]
 
   const verdict = computeVerdict(signals)
