@@ -39,9 +39,9 @@ export function ensureSeeded(months = 6): void {
   }
 }
 
-/** True while the initial seed is in progress (DB still empty or filling) */
+/** True while any seed (initial or refresh) is actively running */
 export function isSeeding(): boolean {
-  return activeSeed !== null && getTotalCount() === 0
+  return activeSeed !== null
 }
 
 async function seedMonths(months: number): Promise<void> {
