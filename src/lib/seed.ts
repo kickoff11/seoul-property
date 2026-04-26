@@ -20,14 +20,17 @@ let lastRefreshedAt = 0
 
 export async function ensureSeeded(months = 6): Promise<void> {
   if (getTotalCount() === 0) {
+    // DB is empty — must wait for initial seed before we can serve anything
     await seedMonths(months)
     lastRefreshedAt = Date.now()
     return
   }
 
+  // DB has data — return immediately so the response is fast.
+  // Kick off a background refresh if the hourly window has elapsed.
   if (Date.now() - lastRefreshedAt > REFRESH_INTERVAL_MS) {
-    lastRefreshedAt = Date.now()   // set before await to prevent concurrent races
-    await seedMonths(2)
+    lastRefreshedAt = Date.now()   // mark now to prevent concurrent refreshes
+    seedMonths(2).catch(err => console.error('[seed] background refresh failed', err))
   }
 }
 
