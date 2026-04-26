@@ -202,19 +202,21 @@ export function getMonthlyTrends(lawdCd?: string) {
   // District-specific: a complete month has 50+; use 20 as floor.
   const minCount = lawdCd ? 20 : 500
   return getDb().prepare(`
-    SELECT
-      deal_year  AS dealYear,
-      deal_month AS dealMonth,
-      COUNT(*)   AS count,
-      AVG(amount) AS avgAmount,
-      AVG(price_per_m2) AS avgPricePerM2,
-      MIN(amount) AS minAmount,
-      MAX(amount) AS maxAmount
-    FROM transactions ${where}
-    GROUP BY deal_year, deal_month
-    HAVING count >= ${minCount}
-    ORDER BY deal_year ASC, deal_month ASC
-    LIMIT 12
+    SELECT * FROM (
+      SELECT
+        deal_year  AS dealYear,
+        deal_month AS dealMonth,
+        COUNT(*)   AS count,
+        AVG(amount) AS avgAmount,
+        AVG(price_per_m2) AS avgPricePerM2,
+        MIN(amount) AS minAmount,
+        MAX(amount) AS maxAmount
+      FROM transactions ${where}
+      GROUP BY deal_year, deal_month
+      HAVING count >= ${minCount}
+      ORDER BY deal_year DESC, deal_month DESC
+      LIMIT 12
+    ) ORDER BY dealYear ASC, dealMonth ASC
   `).all() as {
     dealYear: number; dealMonth: number; count: number
     avgAmount: number; avgPricePerM2: number
