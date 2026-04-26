@@ -209,27 +209,31 @@ export default function RealityPage() {
           </div>
         </div>
 
-        <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={combinedChart} margin={{ top: 5, right: 10, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 9 }} interval={1}
-              angle={-45} textAnchor="end" height={44} />
-            <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}천`}
-              label={{ value: '거래 건수', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10, dx: -8 }}
-              width={52} />
-            <Tooltip
-              contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
-              formatter={(v: number) => [`${v.toLocaleString()}건`, '거래량']}
-            />
-            <ReferenceLine y={data.volumeHistoricalAvg} stroke="#f59e0b" strokeDasharray="5 3"
-              label={{ value: '평년 평균 6,500건', fill: '#f59e0b', fontSize: 10, position: 'insideTopRight' }} />
-            <Bar dataKey="거래량" radius={[3, 3, 0, 0]}>
-              {combinedChart.map((entry, i) => (
-                <Cell key={i} fill={entry.거래량 < data.volumeHistoricalAvg ? '#ef4444' : '#3b82f6'} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="overflow-x-auto">
+          <div style={{ minWidth: 360 }}>
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={combinedChart} margin={{ top: 5, right: 10, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 9 }} interval="preserveStartEnd"
+                  angle={-45} textAnchor="end" height={44} />
+                <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}천`}
+                  label={{ value: '거래 건수', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10, dx: -8 }}
+                  width={52} />
+                <Tooltip
+                  contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
+                  formatter={(v: number) => [`${v.toLocaleString()}건`, '거래량']}
+                />
+                <ReferenceLine y={data.volumeHistoricalAvg} stroke="#f59e0b" strokeDasharray="5 3"
+                  label={{ value: '평년 평균 6,500건', fill: '#f59e0b', fontSize: 10, position: 'insideTopRight' }} />
+                <Bar dataKey="거래량" radius={[3, 3, 0, 0]}>
+                  {combinedChart.map((entry, i) => (
+                    <Cell key={i} fill={entry.거래량 < data.volumeHistoricalAvg ? '#ef4444' : '#3b82f6'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       {/* Chart 2: R-ONE price index time series */}
@@ -261,10 +265,11 @@ export default function RealityPage() {
             </p>
           </div>
 
+          <div className="overflow-x-auto"><div style={{ minWidth: 340 }}>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={data.priceIndexSeries} margin={{ top: 5, right: 10, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis dataKey="label" tick={{ fill: '#94a3b8', fontSize: 10 }} interval={2} />
+              <XAxis dataKey="label" tick={{ fill: '#94a3b8', fontSize: 10 }} interval="preserveStartEnd" />
               <YAxis
                 tick={{ fill: '#94a3b8', fontSize: 10 }}
                 domain={['auto', 'auto']}
@@ -285,6 +290,7 @@ export default function RealityPage() {
                 dot={{ fill: '#3b82f6', r: 3 }} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
+          </div></div>
           <DataSource
             label={`한국부동산원 R-ONE 아파트 매매가격지수 · 서울 전체 · 분기별 표시 · 기준월: ${data.priceDataMonth ?? '미확인'}`}
             isReal
@@ -299,10 +305,11 @@ export default function RealityPage() {
           badge={<EstBadge note="호가 데이터 공개 API 없음 — KB부동산 기반 추정" />}
           sub="갭이 클수록 셀러 희망가와 실제 거래 가능 가격의 차이가 큼. 정상 시장 기준: 2% 이하"
         />
+        <div className="overflow-x-auto"><div style={{ minWidth: 320 }}>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={gapChart} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 10 }} interval={2} />
+            <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 10 }} interval="preserveStartEnd" />
             <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={v => `${v}%`} domain={[0, 18]} />
             <Tooltip
               contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
@@ -321,6 +328,7 @@ export default function RealityPage() {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+        </div></div>
       </div>
 
       {/* Chart 4: District ask-gap with reframed insight */}
