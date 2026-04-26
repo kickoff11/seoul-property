@@ -26,34 +26,40 @@ interface DashboardData {
 
 export default function Dashboard() {
   const [data, setData]       = useState<DashboardData | null>(null)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [loading, setLoading] = useState(true)
+  const [seeding, setSeeding] = useState(false)
   const [selectedGu, setSelectedGu] = useState<string | null>(null)
   const [districtTrends, setDistrictTrends] = useState<PriceTrend[]>([])
 
-  useEffect(() => {
-    async function load() {
-      const [d, t, tr, v, sup, dem] = await Promise.all([
-        fetch('/api/districts').then(r => r.json()),
-        fetch('/api/transactions?limit=300').then(r => r.json()),
-        fetch('/api/trends').then(r => r.json()),
-        fetch('/api/vacant').then(r => r.json()),
-        fetch('/api/supply').then(r => r.json()),
-        fetch('/api/demand').then(r => r.json()),
-      ])
-      setData({
-        districts:    d.data,
-        transactions: t.data,
-        trends:       tr.data,
-        vacant:       v.data,
-        supply:       sup.annualSupply,
-        sentiment:    dem.sentiment?.[dem.sentiment.length - 1] ?? null,
-        interestRate: dem.interestRates?.[dem.interestRates.length - 1] ?? null,
-      })
-      setLoading(false)
+  const load = useCallback(async () => {
+    const [d, t, tr, v, sup, dem] = await Promise.all([
+      fetch('/api/districts').then(r => r.json()),
+      fetch('/api/transactions?limit=300').then(r => r.json()),
+      fetch('/api/trends').then(r => r.json()),
+      fetch('/api/vacant').then(r => r.json()),
+      fetch('/api/supply').then(r => r.json()),
+      fetch('/api/demand').then(r => r.json()),
+    ])
+
+    // Server is still seeding (cold start) — retry in 4 s
+    if (d.seeding || d.data?.length === 0) {
+      setSeeding(true)
+      setTimeout(load, 4000)
+      return
     }
-    load()
+
+    setSeeding(false)
+    setData({
+      districts:    d.data,
+      transactions: t.data,
+      trends:       tr.data,
+      vacant:       v.data,
+      supply:       sup.annualSupply,
+      sentiment:    dem.sentiment?.[dem.sentiment.length - 1] ?? null,
+      interestRate: dem.interestRates?.[dem.interestRates.length - 1] ?? null,
+    })
   }, [])
+
+  useEffect(() => { load() }, [load])
 
   const handleDistrictClick = useCallback(async (lawdCd: string) => {
     const d = data?.districts.find(x => x.lawdCd === lawdCd)
@@ -63,10 +69,12 @@ export default function Dashboard() {
     setDistrictTrends(json.data)
   }, [data])
 
-  if (loading) return (
+  if (!data) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
       <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-      <p className="text-slate-400 text-sm">데이터 로딩 중… (첫 실행 시 약 3초 소요)</p>
+      <p className="text-slate-400 text-sm">
+        {seeding ? '서버 첫 시작 중… 국토교통부 데이터 수집 중 (약 10초)' : '데이터 로딩 중…'}
+      </p>
     </div>
   )
 

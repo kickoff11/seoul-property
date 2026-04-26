@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { ensureSeeded } from '@/lib/seed'
+import { ensureSeeded, isSeeding } from '@/lib/seed'
 import { getDistrictSummary } from '@/lib/db'
 import { DISTRICT_BY_CODE } from '@/lib/seoul-districts'
 
 export async function GET() {
-  await ensureSeeded()
+  ensureSeeded()
 
   const rows = getDistrictSummary()
   const data = rows.map(r => ({
@@ -14,5 +14,7 @@ export async function GET() {
     district:      DISTRICT_BY_CODE[r.lawdCd],
   }))
 
-  return NextResponse.json({ data })
+  return NextResponse.json({ data, seeding: isSeeding() }, {
+    headers: { 'Cache-Control': 'no-store' },
+  })
 }
