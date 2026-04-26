@@ -124,7 +124,7 @@ export default function PolicyPage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-emerald-950/20 border border-emerald-700/40 rounded-xl p-4 text-center">
           <p className="text-2xl font-bold text-emerald-400">{bearish.length}</p>
           <p className="text-xs text-slate-400 mt-1">가격 하방 압력 정책</p>

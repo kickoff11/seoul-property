@@ -130,7 +130,7 @@ export default function RealityPage() {
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
           <p className="text-xs text-slate-400 uppercase tracking-wide">현재 거래량 vs 평년</p>
           <p className="text-2xl font-bold text-rose-400 mt-1">
@@ -212,8 +212,8 @@ export default function RealityPage() {
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={combinedChart} margin={{ top: 5, right: 10, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 10 }} interval={0}
-              angle={-45} textAnchor="end" height={40} />
+            <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 9 }} interval={1}
+              angle={-45} textAnchor="end" height={44} />
             <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}천`}
               label={{ value: '거래 건수', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10, dx: -8 }}
               width={52} />
@@ -360,8 +360,10 @@ export default function RealityPage() {
           </div>
         </div>
 
+        <div className="overflow-x-auto">
+        <div style={{ minWidth: 320 }}>
         <ResponsiveContainer width="100%" height={340}>
-          <BarChart data={districtGapChart} layout="vertical" margin={{ top: 5, right: 80, left: 60, bottom: 5 }}>
+          <BarChart data={districtGapChart} layout="vertical" margin={{ top: 5, right: 40, left: 52, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
             <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 10 }}
               tickFormatter={v => `${v}%`} domain={[0, 30]} />
@@ -384,6 +386,8 @@ export default function RealityPage() {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+        </div>
+        </div>
         <div className="mt-3 flex flex-wrap gap-4 text-xs text-slate-400">
           {(['premium', 'mid', 'outer'] as const).map(cat => (
             <span key={cat} className="flex items-center gap-1.5">

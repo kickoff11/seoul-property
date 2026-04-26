@@ -125,7 +125,7 @@ export default function SupplyDemandPage() {
       </div>
 
       {/* Combined KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <MetricCard title="2026년 예정 입주" value={`${(supply2026/10000).toFixed(1)}만 세대`}
           sub={`수요比 ${(supply2026/supply.annualDemandBaseline*100).toFixed(0)}%`}
           highlight source="부동산R114 추정" sourceReal={false} />

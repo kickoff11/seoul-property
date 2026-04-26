@@ -97,7 +97,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <MetricCard
           title="총 거래 건수"
           value={`${totalTx.toLocaleString()}건`}
