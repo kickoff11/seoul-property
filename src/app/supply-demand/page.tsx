@@ -171,6 +171,7 @@ export default function SupplyDemandPage() {
               <SectionHeader title="연도별 서울 아파트 입주 물량"
                 badge={<MixedBadge note="실적: 국토교통부 · 전망: 부동산R114 추정" />}
                 sub="진한 막대 = 실적 · 흐린 막대 = 추정 · 점선 = 수요 기준선 (37,000세대)" />
+              <div className="overflow-x-auto"><div style={{ minWidth: 320 }}>
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={supplyChartData} margin={{ top: 5, right: 5, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -191,13 +192,15 @@ export default function SupplyDemandPage() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+              </div></div>
             </div>
             <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
               <SectionHeader title="공급/수요 비율"
                 badge={<EstBadge note="수요 기준선 37,000세대 추정" />}
                 sub="1.0 이하 → 가격 상방 압력" />
+              <div className="overflow-x-auto"><div style={{ minWidth: 260 }}>
               <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={ratioData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                <LineChart data={ratioData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                   <XAxis dataKey="year" tick={{ fill: '#94a3b8', fontSize: 11 }} />
                   <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} domain={[0, 2]} tickFormatter={v => `${v}x`} />
@@ -209,6 +212,7 @@ export default function SupplyDemandPage() {
                     dot={{ fill: '#3b82f6', r: 4 }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
+              </div></div>
             </div>
           </div>
 
@@ -288,6 +292,7 @@ export default function SupplyDemandPage() {
                   ? <RealBadge source="한국은행 ECOS API" />
                   : <EstBadge note="공개보고서 기반 · 최신 공표치 반영" />}
                 sub="기준금리 & 주담대 금리 — 인하 사이클 진입" />
+              <div className="overflow-x-auto"><div style={{ minWidth: 300 }}>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={rateChart} margin={{ top: 5, right: 10, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -302,6 +307,7 @@ export default function SupplyDemandPage() {
                   <Line dataKey="주담대금리" stroke="#f59e0b" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
+              </div></div>
             </div>
 
             {/* Sentiment */}
@@ -309,6 +315,7 @@ export default function SupplyDemandPage() {
               <SectionHeader title="매수·가격 심리지수 (KB부동산)"
                 badge={<EstBadge note="KB부동산 보고서 기반 · 실시간 아님" />}
                 sub="100 = 중립 / 100 이상 = 매수 우위" />
+              <div className="overflow-x-auto"><div style={{ minWidth: 300 }}>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={sentimentChart} margin={{ top: 5, right: 10, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -324,6 +331,7 @@ export default function SupplyDemandPage() {
                   <Line dataKey="가격전망지수"  stroke="#a78bfa" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
+              </div></div>
             </div>
 
             {/* Affordability */}
@@ -335,13 +343,14 @@ export default function SupplyDemandPage() {
                 sub={demand.marketSummary.livePir
                   ? 'PIR = 국토부 실거래 중위가격 ÷ 통계청 중위가구소득'
                   : 'PIR = 중위 아파트가 ÷ 중위 가구 연소득 (추정치)'} />
+              <div className="overflow-x-auto"><div style={{ minWidth: 300 }}>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={affordChart} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                   <XAxis dataKey="year" tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                  <YAxis yAxisId="pir" orientation="left" tick={{ fill: '#94a3b8', fontSize: 10 }}
+                  <YAxis yAxisId="pir" orientation="left" width={44} tick={{ fill: '#94a3b8', fontSize: 10 }}
                     tickFormatter={v => `${v}배`} domain={[0, 40]} />
-                  <YAxis yAxisId="burden" orientation="right" tick={{ fill: '#94a3b8', fontSize: 10 }}
+                  <YAxis yAxisId="burden" orientation="right" width={40} tick={{ fill: '#94a3b8', fontSize: 10 }}
                     tickFormatter={v => `${v}%`} domain={[0, 80]} />
                   <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }} />
                   <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
@@ -351,6 +360,7 @@ export default function SupplyDemandPage() {
                   <Bar yAxisId="burden" dataKey="월 상환 부담 (%)" fill="#f59e0b" fillOpacity={0.8} radius={[3,3,0,0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </div></div>
               <p className="text-xs text-slate-500 mt-2">
                 ※ PIR은 측정 방법에 따라 차이가 큼. 이 수치는 중위 아파트 실거래가 ÷ 서울 중위 가구 소득 기반 추정이며, 보수적 산출 방식입니다.
               </p>
@@ -384,7 +394,7 @@ export default function SupplyDemandPage() {
               <div className="mt-4 flex items-center gap-4">
                 <div className="shrink-0">
                   <p className="text-xs text-slate-400 mb-1">연령별 매수자 (2023)</p>
-                  <ResponsiveContainer width={120} height={100}>
+                  <ResponsiveContainer width="100%" height={100}>
                     <PieChart>
                       <Pie data={demand.buyerAgeDistribution} dataKey="pct" cx="50%" cy="50%" innerRadius={30} outerRadius={50} paddingAngle={2}>
                         {demand.buyerAgeDistribution.map((_, i) => <Cell key={i} fill={AGE_COLORS[i]} />)}

@@ -68,8 +68,9 @@ export default function GapsPage() {
             badge={<EstBadge note="KB부동산 호가지수 기반 추정" />}
             sub="정상 시장 기준선 ~2% · 현재 약 10.5% — 5배 이상 괴리 지속 중"
           />
+          <div className="overflow-x-auto"><div style={{ minWidth: 300 }}>
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={data.askTransactionGap} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+            <LineChart data={data.askTransactionGap} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 10 }}
                 tickFormatter={m => m.slice(2)} interval={2} />
@@ -86,6 +87,7 @@ export default function GapsPage() {
                 dot={false} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
+          </div></div>
           <DataSource label="KB부동산 호가지수 기반 추정 · 정확한 실시간 갭은 네이버 부동산 접근 허용 시 표시" isReal={false} />
         </div>
       )}
@@ -103,10 +105,11 @@ export default function GapsPage() {
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: '#a78bfa' }} />중간</span>
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: '#f87171' }} />외곽</span>
           </div>
+          <div className="overflow-x-auto"><div style={{ minWidth: 600 }}>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart
               data={data.districtAskGap}
-              margin={{ top: 5, right: 10, left: -10, bottom: 40 }}
+              margin={{ top: 5, right: 10, left: 10, bottom: 40 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis dataKey="gu" tick={{ fill: '#94a3b8', fontSize: 10 }} angle={-40} textAnchor="end" interval={0} />
@@ -127,6 +130,7 @@ export default function GapsPage() {
               <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8', paddingTop: 8 }} />
             </BarChart>
           </ResponsiveContainer>
+          </div></div>
           <DataSource label="KB부동산 호가지수 기반 추정 (2025 Q1 기준)" isReal={false} />
         </div>
       )}

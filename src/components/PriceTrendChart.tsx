@@ -30,6 +30,7 @@ export default function PriceTrendChart({ data, title }: Props) {
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
       {title && <h3 className="text-sm font-semibold text-slate-300 mb-4">{title}</h3>}
+      <div className="overflow-x-auto"><div style={{ minWidth: 320 }}>
       <ResponsiveContainer width="100%" height={260}>
         <LineChart data={formatted} margin={{ top: 5, right: 4, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -77,6 +78,7 @@ export default function PriceTrendChart({ data, title }: Props) {
           />
         </LineChart>
       </ResponsiveContainer>
+      </div></div>
     </div>
   )
 }
