@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { ensureSeeded } from '@/lib/seed'
 import { getInactiveComplexes } from '@/lib/db'
@@ -5,7 +6,7 @@ import { monthsInactive } from '@/lib/analysis'
 import { MOCK_VACANT_COMPLEXES } from '@/lib/vacant-data'
 
 export async function GET(req: NextRequest) {
-  await ensureSeeded()
+  ensureSeeded()
 
   const threshold = parseInt(req.nextUrl.searchParams.get('months') ?? '18')
   const rows      = getInactiveComplexes(threshold)

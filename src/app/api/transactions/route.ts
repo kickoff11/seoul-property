@@ -1,10 +1,11 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { ensureSeeded } from '@/lib/seed'
 import { fetchTransactionsFromApi } from '@/lib/molit-api'
 import { isCached, saveTransactions, getTransactions } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
-  await ensureSeeded()
+  ensureSeeded()
 
   const p = req.nextUrl.searchParams
   const lawdCd  = p.get('lawdCd') ?? ''

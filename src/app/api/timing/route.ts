@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 /**
  * /api/timing — Buy Timing Signal Dashboard
  *
@@ -231,7 +232,7 @@ function computeVerdict(signals: TimingSignal[]): {
 // ── Route ────────────────────────────────────────────────────────
 
 export async function GET() {
-  await ensureSeeded()
+  ensureSeeded()
 
   const VOLUME_AVG  = 6500
   const DEMAND_BASE = 37000

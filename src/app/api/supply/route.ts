@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import {
   ANNUAL_SUPPLY, SUPPLY_DEMAND, MAJOR_PROJECTS,
@@ -7,7 +8,7 @@ import { ensureSeeded } from '@/lib/seed'
 import { getDistrictSummary } from '@/lib/db'
 
 export async function GET() {
-  await ensureSeeded()
+  ensureSeeded()
 
   // Build a real avg price/m² lookup from MOLIT transaction data
   const summary = getDistrictSummary()

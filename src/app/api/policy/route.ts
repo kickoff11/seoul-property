@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { HOUSING_POLICIES, SCENARIOS } from '@/lib/policy-data'
 

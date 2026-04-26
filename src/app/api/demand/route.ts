@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 /**
  * /api/demand
  *
@@ -46,7 +47,7 @@ function computeMonthlyBurden(
 }
 
 export async function GET() {
-  await ensureSeeded()
+  ensureSeeded()
 
   // ── Live interest rates from BOK ──────────────────────────────
   const [baseRateRows, mortgageRateRows] = await Promise.all([

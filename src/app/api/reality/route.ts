@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import {
   FACT_CHECKS, SELLER_DENIAL, DISTRICT_ASK_GAP,
@@ -162,7 +163,7 @@ async function getRealPriceData(): Promise<{
 // ── Route handler ──────────────────────────────────────────────
 
 export async function GET() {
-  await ensureSeeded()
+  ensureSeeded()
 
   const [priceData, realVolume] = await Promise.all([
     getRealPriceData(),

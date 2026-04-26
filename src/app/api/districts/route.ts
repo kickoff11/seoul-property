@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { ensureSeeded, isSeeding } from '@/lib/seed'
 import { getDistrictSummary } from '@/lib/db'

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 /**
  * /api/gaps — Ask price vs actual transaction price gap analysis.
  *
@@ -17,7 +18,7 @@ import {
 } from '@/lib/market-reality'
 
 export async function GET(req: NextRequest) {
-  await ensureSeeded()
+  ensureSeeded()
 
   const lawdCd = req.nextUrl.searchParams.get('lawdCd') ?? '11680' // default: 강남구
 
