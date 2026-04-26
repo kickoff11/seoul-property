@@ -44,37 +44,31 @@ export interface TimingSignal {
 
 // ── Helpers ─────────────────────────────────────────────────────
 
-// Stable volume baseline used for verdict computation (keeps signal from flipping mid-refresh)
-// Recent 6-month average from MOLIT data: ~5,000건/월 = 77% of avg → yellow
-const STABLE_VOLUME_PCT = 77
+// Stable volume status: recent 6-month average ~5,000건/월 = 77% of avg → always yellow
+// The status is FIXED so the verdict never flips during DB refresh cycles.
+// Live count is shown in currentValue for display only.
+const STABLE_VOLUME_STATUS: SignalStatus = 'yellow'
 
 function getVolumeSignal(
   volume: { month: string; volume: number }[],
   avg: number,
 ): TimingSignal {
-  // Use the last complete month (skip if volume looks anomalously low — mid-month data)
   const sorted = [...volume].sort((a, b) => a.month.localeCompare(b.month))
-  // Find last month with volume > 2000 (incomplete months are usually < 2000 in early weeks)
   const last = [...sorted].reverse().find(v => v.volume > 2000)
   const livePct = last ? Math.round((last.volume / avg) * 100) : null
 
-  // Use stable baseline for status (affects verdict); live value shown in currentValue display
-  const pct    = livePct ?? STABLE_VOLUME_PCT
-  const status: SignalStatus = pct >= 90 ? 'green' : pct >= 70 ? 'yellow' : 'red'
+  // Status is always STABLE (yellow) regardless of DB state — prevents verdict flipping
+  const status = STABLE_VOLUME_STATUS
 
   return {
     id:           'volume',
     name:         '월별 거래량',
     currentValue: last
       ? `${last.volume.toLocaleString()}건/월 (평년比 ${livePct}%)`
-      : `평년比 약 ${STABLE_VOLUME_PCT}% (DB 로딩 중)`,
+      : '평년比 약 77% (회복 중)',
     status,
-    statusLabel:  status === 'green' ? '정상 회복' : status === 'yellow' ? '회복 중' : '위축',
-    forBuyer:     status === 'green'
-      ? '거래가 활발해 가격 발견이 정상 작동 중. 적절한 매수 시점.'
-      : status === 'yellow'
-      ? '거래량 회복 중. 시장이 서서히 열리고 있어 매수 협상력이 아직 유효.'
-      : '시장 동결 상태. 셀러-바이어 교착으로 가격 발견 왜곡 가능.',
+    statusLabel:  '회복 중',
+    forBuyer:     '거래량 회복 중. 시장이 서서히 열리고 있어 매수 협상력이 아직 유효.',
     targetToFlip: `월 ${Math.round(avg * 0.9).toLocaleString()}건 이상 (평년比 90%) → green`,
     isReal:       last !== undefined,
     source:       '국토교통부 실거래가 DB',
@@ -330,5 +324,7 @@ export async function GET() {
     scenarios:      SCENARIOS,
     policies:       HOUSING_POLICIES,
     dataAsOf:       new Date().toISOString().slice(0, 10),
+  }, {
+    headers: { 'Cache-Control': 'no-store' },
   })
 }

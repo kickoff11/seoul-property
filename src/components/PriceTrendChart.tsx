@@ -45,9 +45,9 @@ export default function PriceTrendChart({ data, title }: Props) {
           <YAxis
             yAxisId="count"
             orientation="right"
-            width={38}
+            width={36}
             tick={{ fill: '#94a3b8', fontSize: 10 }}
-            tickFormatter={v => `${v}건`}
+            tickFormatter={v => `${Math.round(v / 1000)}천`}
           />
           <Tooltip
             contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
