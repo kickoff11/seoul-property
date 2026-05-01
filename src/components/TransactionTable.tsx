@@ -75,7 +75,7 @@ export default function TransactionTable({ data, showDistrict = true }: Props) {
       className="px-3 py-2 text-left text-xs font-medium text-slate-400 uppercase tracking-wide cursor-pointer hover:text-slate-200 select-none whitespace-nowrap"
       onClick={() => toggle(k)}
     >
-      {label} {sort === k ? (asc ? '↑' : '↓') : ''}
+      {label}<span translate="no" className="ml-1">{sort === k ? (asc ? '↑' : '↓') : ''}</span>
     </th>
   )
 
@@ -112,7 +112,7 @@ export default function TransactionTable({ data, showDistrict = true }: Props) {
                   : 'bg-slate-700 border-slate-600 text-slate-400',
               )}
             >
-              {label}{sort === k ? (asc ? ' ↑' : ' ↓') : ''}
+              {label}<span translate="no">{sort === k ? (asc ? ' ↑' : ' ↓') : ''}</span>
             </button>
           ))}
         </div>
