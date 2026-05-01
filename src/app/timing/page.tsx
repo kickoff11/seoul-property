@@ -134,6 +134,43 @@ export default function TimingPage() {
         </div>
       </div>
 
+      {/* Signal threshold table */}
+      <div className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">신호 판단 기준 — 현재 수치 요약</p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-slate-700/50">
+                <th className="text-left py-1.5 pr-3 text-slate-500 font-medium">지표</th>
+                <th className="text-left py-1.5 pr-3 text-slate-500 font-medium">현재값</th>
+                <th className="text-left py-1.5 pr-3 text-slate-500 font-medium hidden sm:table-cell">전환 조건</th>
+                <th className="text-left py-1.5 text-slate-500 font-medium">신호</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-700/30">
+              {data.signals.map(s => (
+                <tr key={s.id}>
+                  <td className="py-2 pr-3 text-slate-300 font-medium whitespace-nowrap">{s.name}</td>
+                  <td className="py-2 pr-3 text-slate-400">{s.currentValue}</td>
+                  <td className="py-2 pr-3 text-slate-500 hidden sm:table-cell leading-relaxed">{s.targetToFlip}</td>
+                  <td className="py-2">
+                    <span className={clsx(
+                      'inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border',
+                      s.status === 'red'    && 'bg-rose-900/40 text-rose-300 border-rose-700/40',
+                      s.status === 'yellow' && 'bg-amber-900/40 text-amber-300 border-amber-700/40',
+                      s.status === 'green'  && 'bg-emerald-900/40 text-emerald-300 border-emerald-800/40',
+                    )}>
+                      <span className={clsx('w-1.5 h-1.5 rounded-full', STATUS_DOT[s.status])} />
+                      {s.statusLabel}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Two-column signal layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Buy risk signals */}

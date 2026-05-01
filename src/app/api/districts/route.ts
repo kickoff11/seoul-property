@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { ensureSeeded, isSeeding } from '@/lib/seed'
-import { getDistrictSummary } from '@/lib/db'
+import { getDistrictSummary, getDataFreshnessHours } from '@/lib/db'
 import { DISTRICT_BY_CODE } from '@/lib/seoul-districts'
 
 export async function GET() {
@@ -15,7 +15,7 @@ export async function GET() {
     district:      DISTRICT_BY_CODE[r.lawdCd],
   }))
 
-  return NextResponse.json({ data, seeding: isSeeding() }, {
+  return NextResponse.json({ data, seeding: isSeeding(), dataAgeHours: getDataFreshnessHours() }, {
     headers: { 'Cache-Control': 'no-store' },
   })
 }

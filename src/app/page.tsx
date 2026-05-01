@@ -11,6 +11,8 @@ import { DistrictSummary, ApartmentTransaction, PriceTrend, VacantComplex, Suppl
 import { fmt, fmtPricePerM2 } from '@/lib/analysis'
 import Link from 'next/link'
 import { RealBadge, EstBadge, DataSource } from '@/components/DataBadge'
+import StaleDataBanner from '@/components/StaleDataBanner'
+import { useWatchlist, WatchlistPanel } from '@/components/Watchlist'
 
 const SeoulMap = dynamic(() => import('@/components/SeoulMap'), { ssr: false })
 
@@ -25,10 +27,12 @@ interface DashboardData {
 }
 
 export default function Dashboard() {
-  const [data, setData]       = useState<DashboardData | null>(null)
-  const [seeding, setSeeding] = useState(false)
-  const [selectedGu, setSelectedGu] = useState<string | null>(null)
+  const [data, setData]           = useState<DashboardData | null>(null)
+  const [seeding, setSeeding]     = useState(false)
+  const [dataAgeHours, setDataAgeHours] = useState<number | null>(null)
+  const [selectedGu, setSelectedGu]     = useState<string | null>(null)
   const [districtTrends, setDistrictTrends] = useState<PriceTrend[]>([])
+  const { items: watchlist, add: watchAdd, remove: watchRemove } = useWatchlist()
 
   const load = useCallback(async () => {
     const [d, t, tr, v, sup, dem] = await Promise.all([
@@ -48,6 +52,7 @@ export default function Dashboard() {
     }
 
     setSeeding(false)
+    setDataAgeHours(d.dataAgeHours ?? null)
     setData({
       districts:    d.data,
       transactions: t.data,
@@ -103,6 +108,9 @@ export default function Dashboard() {
           <EstBadge note="공급 전망 · 수요 심리 — 공개보고서 기반" />
         </div>
       </div>
+
+      {/* Stale data warning */}
+      <StaleDataBanner dataAgeHours={dataAgeHours} />
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -240,6 +248,9 @@ export default function Dashboard() {
 
       {/* Vacancy */}
       {data.vacant.length > 0 && <VacancyAlert data={data.vacant} />}
+
+      {/* Floating watchlist panel */}
+      <WatchlistPanel items={watchlist} onRemove={watchRemove} />
     </div>
   )
 }

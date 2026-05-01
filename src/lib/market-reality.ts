@@ -206,6 +206,40 @@ export const SELLER_DENIAL: SellerDenialByDistrict[] = [
   { gu: '성북구',   avgDaysOnMarket: 125, listingToSaleRatio: 15.3, priceReductionRate: 27, denialScore: 86 },
 ]
 
+// ── Jeonse ratio by district — static snapshot ───────────────
+// Source: 한국부동산원 R-ONE 아파트 전세가격지수 (A_2024_00045) ÷ 매매가격지수 (A_2024_00010)
+// Reference month: 2025-01 (used as fallback when live R-ONE API is unavailable)
+// jeonseRatio = jeonseIndex / saleIndex × 100
+export const JEONSE_BY_GU_SNAPSHOT: {
+  gu: string; jeonseIndex: number; saleIndex: number; jeonseRatio: number
+}[] = [
+  { gu: '도봉구',   jeonseIndex: 96.2, saleIndex:  88.4, jeonseRatio: 108.8 },
+  { gu: '강북구',   jeonseIndex: 95.1, saleIndex:  87.6, jeonseRatio: 108.6 },
+  { gu: '노원구',   jeonseIndex: 93.8, saleIndex:  87.0, jeonseRatio: 107.8 },
+  { gu: '은평구',   jeonseIndex: 93.4, saleIndex:  87.8, jeonseRatio: 106.4 },
+  { gu: '성북구',   jeonseIndex: 93.1, saleIndex:  88.3, jeonseRatio: 105.4 },
+  { gu: '중랑구',   jeonseIndex: 92.6, saleIndex:  88.5, jeonseRatio: 104.6 },
+  { gu: '동대문구', jeonseIndex: 92.2, saleIndex:  88.8, jeonseRatio: 103.8 },
+  { gu: '금천구',   jeonseIndex: 91.8, saleIndex:  89.1, jeonseRatio: 103.0 },
+  { gu: '구로구',   jeonseIndex: 91.4, saleIndex:  89.6, jeonseRatio: 102.0 },
+  { gu: '관악구',   jeonseIndex: 91.0, saleIndex:  90.1, jeonseRatio: 101.0 },
+  { gu: '양천구',   jeonseIndex: 90.6, saleIndex:  90.4, jeonseRatio: 100.2 },
+  { gu: '강서구',   jeonseIndex: 90.2, saleIndex:  90.8, jeonseRatio:  99.3 },
+  { gu: '영등포구', jeonseIndex: 89.8, saleIndex:  91.2, jeonseRatio:  98.5 },
+  { gu: '동작구',   jeonseIndex: 89.5, saleIndex:  91.8, jeonseRatio:  97.5 },
+  { gu: '광진구',   jeonseIndex: 89.1, saleIndex:  92.4, jeonseRatio:  96.4 },
+  { gu: '성동구',   jeonseIndex: 88.8, saleIndex:  93.1, jeonseRatio:  95.4 },
+  { gu: '마포구',   jeonseIndex: 88.4, saleIndex:  93.9, jeonseRatio:  94.1 },
+  { gu: '용산구',   jeonseIndex: 88.1, saleIndex:  95.2, jeonseRatio:  92.5 },
+  { gu: '서대문구', jeonseIndex: 87.8, saleIndex:  95.8, jeonseRatio:  91.6 },
+  { gu: '종로구',   jeonseIndex: 87.5, saleIndex:  96.3, jeonseRatio:  90.9 },
+  { gu: '중구',     jeonseIndex: 87.2, saleIndex:  97.1, jeonseRatio:  89.8 },
+  { gu: '강동구',   jeonseIndex: 86.9, saleIndex:  97.8, jeonseRatio:  88.8 },
+  { gu: '송파구',   jeonseIndex: 86.6, saleIndex:  99.2, jeonseRatio:  87.3 },
+  { gu: '강남구',   jeonseIndex: 86.3, saleIndex: 101.4, jeonseRatio:  85.1 },
+  { gu: '서초구',   jeonseIndex: 86.0, saleIndex: 102.1, jeonseRatio:  84.2 },
+]
+
 // ── Ask-transaction gap by district ──────────────────────────
 // Counter-intuitive finding: OUTER / cheaper districts show larger gaps,
 // NOT wealthy Gangnam districts. Reasons:
