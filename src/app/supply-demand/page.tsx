@@ -198,7 +198,7 @@ export default function SupplyDemandPage() {
                     }}
                   />
                   <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
-                  <Bar dataKey="monthlyTx" name="월 거래량" radius={[3, 3, 0, 0]}>
+                  <Bar dataKey="monthlyTx" name="월 거래량" radius={[3, 3, 0, 0]} fill="#3b82f6">
                     {marketData.map((d, i) => (
                       <Cell key={i} fill={d.est ? '#3b82f640' : '#3b82f6'} />
                     ))}
