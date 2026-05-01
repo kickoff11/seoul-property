@@ -163,8 +163,8 @@ export default function SupplyDemandPage() {
         return (
           <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
             <SectionHeader
-              title="매물 재고지수 추이 (월 기준)"
-              sub="재고지수 = 활성 매물 ÷ 월 거래량 · 4–6개월 = 균형 시장 · 높을수록 매수자 유리"
+              title="매물 공급 강도 추이"
+              sub="공급 강도 = 활성 매물 ÷ 월 거래량. '현 거래 속도가 유지되고 신규 매물이 없다면 기존 매물을 소화하는 데 걸리는 이론적 기간' — 실제 개별 대기 시간이 아닌 시장 온도계."
               badge={<EstBadge note="매물: 네이버부동산 보도 집계 · 거래: 국토교통부·서울경제 보도" />}
             />
             <div className="overflow-x-auto"><div style={{ minWidth: 320 }}>
@@ -204,8 +204,10 @@ export default function SupplyDemandPage() {
               ))}
             </div>
             <p className="text-xs text-slate-500 mt-3 leading-relaxed">
-              2022년 금리 급등으로 거래가 사실상 동결되며 재고지수가 <span className="text-rose-400 font-medium">43.6개월</span>까지 치솟았습니다.
-              이후 금리 인하·세제 완화로 거래가 회복되며 2026년 4월 기준 <span className="text-amber-300 font-medium">8.7개월</span>로 낮아졌으나, 여전히 균형권(4–6개월)의 약 두 배 수준입니다.
+              이 수치는 <span className="text-slate-400">개별 매도자의 대기 기간이 아닙니다.</span>{' '}
+              2022년 43.6개월은 금리 급등으로 매수자가 사라지면서 <span className="text-rose-400 font-medium">월 거래량이 1,282건으로 급락</span>한 결과입니다.
+              시장이 회복된 것은 매도자들이 기다린 것이 아니라, 금리 인하·세제 완화로 <span className="text-slate-300">거래량이 다시 늘었기 때문</span>입니다.
+              높을수록 매수자에게 협상력이 있고, 낮을수록 매도자 우위 시장임을 나타냅니다.
             </p>
           </div>
         )

@@ -181,11 +181,11 @@ function getListingsAbsorptionSignal(monthlyTx: number | null): TimingSignal {
 
   return {
     id:           'absorption',
-    name:         '매물 재고지수 (현 매물 소화에 걸리는 기간)',
-    currentValue: `매물 ${ACTIVE_LISTINGS.toLocaleString()}건 ÷ 월 거래 ${txCount.toLocaleString()}건 → ${monthsInventory}개월 (균형 4–6개월)`,
+    name:         '매물 공급 강도',
+    currentValue: `매물 ${ACTIVE_LISTINGS.toLocaleString()}건 ÷ 월 거래 ${txCount.toLocaleString()}건 → ${monthsInventory}개월치 재고 (균형 4–6개월)`,
     status,
     statusLabel:  status === 'red' ? `${monthsInventory}개월 (과잉)` : status === 'yellow' ? `${monthsInventory}개월 (초과)` : '균형',
-    forBuyer:     `현 매물을 모두 소화하려면 ${monthsInventory}개월이 필요합니다. 2022년 금리 급등 때는 43.6개월까지 치솟았다가 꾸준히 낮아지는 중입니다. 다만 균형권(4–6개월)의 약 두 배로 여전히 매수자가 협상력을 갖는 구간. 다주택자 양도세 유예(5/9 종료) 이후 방향이 바뀔 수 있어 주시가 필요합니다.`,
+    forBuyer:     `현 거래 속도가 유지된다면 기존 매물 전부를 소화하는 데 이론적으로 ${monthsInventory}개월이 걸립니다. 이 지표는 개별 매도자 대기 시간이 아니라 시장 수급 온도계입니다. 2022년 43.6개월은 금리 급등으로 매수자가 사라져 월 거래가 1,282건으로 폭락했기 때문이며, 이후 회복은 거래량 증가(분모 회복) 덕분입니다. 현재 ${monthsInventory}개월은 균형권(4–6개월)의 약 두 배로 매수자 협상력이 있는 구간입니다.`,
     targetToFlip: '재고지수 6개월 이하 → yellow / 4개월 이하 → green (매도자 우위 전환)',
     isReal:       false,
     source:       '서울경제 보도 (2026-04-20) · 한국금융신문 (2024-05-17) 기반 추정',
