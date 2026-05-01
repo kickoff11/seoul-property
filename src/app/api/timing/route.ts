@@ -164,6 +164,32 @@ function getSupplySignal(supply2026: number, demandBaseline: number): TimingSign
   }
 }
 
+function getListingsAbsorptionSignal(monthlyTx: number | null): TimingSignal {
+  // Active listings from Naver Real Estate / Zigbang portal aggregates (reported Q1 2025)
+  const ACTIVE_LISTINGS = 87_000
+  const txCount = monthlyTx ?? 8_000
+  const absorptionPct = parseFloat((txCount / ACTIVE_LISTINGS * 100).toFixed(1))
+
+  // < 15% absorption = red (extreme buyer's market — sellers far outnumber buyers)
+  // < 25% = yellow, >= 25% = green
+  const status: SignalStatus =
+    absorptionPct < 15 ? 'red' :
+    absorptionPct < 25 ? 'yellow' : 'green'
+
+  return {
+    id:           'absorption',
+    name:         '매물 소화율 (매물 대비 거래)',
+    currentValue: `활성 매물 ${ACTIVE_LISTINGS.toLocaleString()}건 대비 월 거래 ${txCount.toLocaleString()}건 → 소화율 ${absorptionPct}%`,
+    status,
+    statusLabel:  status === 'red' ? '극도로 낮음' : status === 'yellow' ? '저조' : '정상',
+    forBuyer:     `서울 아파트 매물이 ${ACTIVE_LISTINGS.toLocaleString()}건 나와 있는데 한 달에 실제로 팔리는 건 ${txCount.toLocaleString()}건뿐입니다. 소화율 ${absorptionPct}%는 정상 시장(25-35%)의 절반도 안 됩니다. 매도자 간 경쟁이 심해 지금은 매수자가 협상력을 갖는 구간입니다.`,
+    targetToFlip: '월 거래량 22,000건 이상 (소화율 25%) → yellow',
+    isReal:       false,
+    source:       '네이버부동산·직방 매물 집계 (2025년 기준 보도 추정치)',
+    riskIfIgnored: 'buy_risk',
+  }
+}
+
 function getPolicySignal(): TimingSignal {
   return {
     id:           'policy',
@@ -301,6 +327,10 @@ export async function GET() {
       : '한국부동산원·통계청 보고서 기반 추정',
   }
 
+  // Live monthly transaction count (last month with > 2000 txs)
+  const sortedVol = [...volumeData].sort((a, b) => a.month.localeCompare(b.month))
+  const lastMonthVol = [...sortedVol].reverse().find(v => v.volume > 2000)?.volume ?? null
+
   // Build signals
   const signals: TimingSignal[] = [
     getVolumeSignal(volumeData, VOLUME_AVG),
@@ -308,6 +338,7 @@ export async function GET() {
     getAskGapSignal(),
     { ...getInterestRateSignal(baseRate, mortgageRate), isReal: !!liveRates, source: ratesSource },
     getSupplySignal(SUPPLY_2026, DEMAND_BASE),
+    getListingsAbsorptionSignal(lastMonthVol),
     getPolicySignal(),
     affordSignal,
   ]

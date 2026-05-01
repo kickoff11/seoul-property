@@ -129,6 +129,26 @@ export default function Dashboard() {
         />
       </div>
 
+      {/* Absorption rate callout */}
+      <div className="bg-rose-900/15 border border-rose-700/40 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="shrink-0 text-center sm:text-left">
+          <p className="text-[10px] font-semibold text-rose-400 uppercase tracking-widest">매물 소화율</p>
+          <p className="text-3xl font-bold text-rose-300">~9%</p>
+          <p className="text-xs text-slate-500">정상 시장 25-35%</p>
+        </div>
+        <div className="h-px sm:h-12 sm:w-px bg-rose-800/50 shrink-0" />
+        <div>
+          <p className="text-sm font-semibold text-slate-200">매물 <span className="text-rose-300">87,000건</span> 중 한 달에 팔리는 건 <span className="text-rose-300">~8,000건</span></p>
+          <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+            11채 중 1채만 팔리는 극심한 매도자 우위 시장. 매수자는 지금 강한 협상력을 갖습니다.
+          </p>
+          <p className="text-[10px] text-amber-700 mt-1.5">◐ 네이버부동산·직방 매물 집계 기반 추정 (2025년)</p>
+        </div>
+        <Link href="/timing" className="sm:ml-auto text-xs text-rose-400 hover:text-rose-300 underline shrink-0">
+          매수 타이밍 분석 →
+        </Link>
+      </div>
+
       {/* Map */}
       <div>
         <div className="flex items-center gap-2 mb-3">
