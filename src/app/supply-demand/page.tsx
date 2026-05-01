@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import {
-  BarChart, Bar, LineChart, Line,
+  BarChart, Bar, LineChart, Line, ComposedChart,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, ReferenceLine, Cell, PieChart, Pie,
 } from 'recharts'
@@ -150,64 +150,78 @@ export default function SupplyDemandPage() {
         </div>
       </div>
 
-      {/* Inventory depth trend */}
+      {/* 10-year listings vs transactions */}
       {(() => {
-        const inventoryData = [
-          { year: '2021', listings: 48152, monthlyTx: 5800, months: 8.3 },
-          { year: '2022', listings: 55884, monthlyTx: 1282, months: 43.6 },
-          { year: '2023', listings: 62307, monthlyTx: 3037, months: 20.5 },
-          { year: '2024', listings: 84797, monthlyTx: 4296, months: 19.7 },
-          { year: '2025', listings: 80000, monthlyTx: 6760, months: 11.8 },
-          { year: '2026.04', listings: 74602, monthlyTx: 8550, months: 8.7 },
+        // Annual transactions — confirmed years from MOLIT/chartngraph; estimates marked
+        // Listings — confirmed from Naver Real Estate portal aggregates (May snapshot)
+        // No reliable listings data exists before 2021
+        const marketData = [
+          { year: '2015', annualTx: 131413, listings: null, est: false },
+          { year: '2016', annualTx: 90000,  listings: null, est: true  },
+          { year: '2017', annualTx: 72000,  listings: null, est: true  },
+          { year: '2018', annualTx: 58000,  listings: null, est: true  },
+          { year: '2019', annualTx: 71734,  listings: null, est: false },
+          { year: '2020', annualTx: 93784,  listings: null, est: false },
+          { year: '2021', annualTx: 46000,  listings: 48152, est: true },
+          { year: '2022', annualTx: 15384,  listings: 55884, est: false },
+          { year: '2023', annualTx: 36439,  listings: 62307, est: false },
+          { year: '2024', annualTx: 56000,  listings: 84797, est: true },
+          { year: '2025', annualTx: 80000,  listings: 80000, est: true },
+          { year: '2026*', annualTx: null,  listings: 74602, est: false },
         ]
         return (
           <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
             <SectionHeader
-              title="매물 공급 강도 추이"
-              sub="공급 강도 = 활성 매물 ÷ 월 거래량. '현 거래 속도가 유지되고 신규 매물이 없다면 기존 매물을 소화하는 데 걸리는 이론적 기간' — 실제 개별 대기 시간이 아닌 시장 온도계."
-              badge={<EstBadge note="매물: 네이버부동산 보도 집계 · 거래: 국토교통부·서울경제 보도" />}
+              title="매물 공급 강도 추이 — 10년 (연간 거래량 vs 활성 매물)"
+              sub="막대: 서울 아파트 연간 거래 건수 · 선: 활성 매물 수 (5월 기준 스냅샷, 2021년부터)"
+              badge={<MixedBadge note="거래: 국토교통부 실거래 (확인) · 매물: 네이버부동산 보도 (2021~)" />}
             />
-            <div className="overflow-x-auto"><div style={{ minWidth: 320 }}>
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={inventoryData} margin={{ top: 5, right: 16, left: 0, bottom: 5 }}>
+            <div className="overflow-x-auto"><div style={{ minWidth: 480 }}>
+              <ResponsiveContainer width="100%" height={280}>
+                <ComposedChart data={marketData} margin={{ top: 5, right: 16, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis dataKey="year" tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                  <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={v => `${v}개월`} width={52} />
+                  <XAxis dataKey="year" tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                  <YAxis yAxisId="tx" orientation="left" width={52}
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    tickFormatter={v => `${(v / 10000).toFixed(0)}만`}
+                    domain={[0, 150000]}
+                  />
+                  <YAxis yAxisId="lst" orientation="right" width={56}
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    tickFormatter={v => `${(v / 10000).toFixed(0)}만`}
+                    domain={[0, 150000]}
+                  />
                   <Tooltip
                     contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
                     labelStyle={{ color: '#e2e8f0' }}
-                    formatter={(v: number, name: string) => {
-                      if (name === '재고지수') return [`${v}개월`, '재고지수']
-                      return [v.toLocaleString(), name]
+                    formatter={(v: number, name: string, props: { payload?: { est?: boolean } }) => {
+                      const suffix = props.payload?.est ? ' (추정)' : ''
+                      if (name === '연간 거래량') return [`${v.toLocaleString()}건${suffix}`, name]
+                      if (name === '활성 매물') return [`${v.toLocaleString()}건`, name]
+                      return [v, name]
                     }}
                   />
-                  <ReferenceLine y={6}  stroke="#10b981" strokeDasharray="4 3" label={{ value: '균형 (6개월)', fill: '#10b981', fontSize: 10, position: 'insideTopRight' }} />
-                  <ReferenceLine y={4}  stroke="#3b82f6" strokeDasharray="4 3" label={{ value: '매도자 유리 (4개월)', fill: '#3b82f6', fontSize: 10, position: 'insideBottomRight' }} />
-                  <Line type="monotone" dataKey="months" name="재고지수" stroke="#f59e0b" strokeWidth={2.5} dot={{ fill: '#f59e0b', r: 4 }} activeDot={{ r: 6 }} />
-                </LineChart>
+                  <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
+                  <Bar yAxisId="tx" dataKey="annualTx" name="연간 거래량" radius={[3, 3, 0, 0]}>
+                    {marketData.map((d, i) => (
+                      <Cell key={i} fill={d.est ? '#3b82f640' : '#3b82f6'} />
+                    ))}
+                  </Bar>
+                  <Line yAxisId="lst" type="monotone" dataKey="listings" name="활성 매물"
+                    stroke="#f59e0b" strokeWidth={2.5}
+                    dot={(props: { cx: number; cy: number }) => (
+                      <circle key={`dot-${props.cx}`} cx={props.cx} cy={props.cy} r={4} fill="#f59e0b" stroke="#f59e0b" />
+                    )}
+                    connectNulls={false}
+                  />
+                </ComposedChart>
               </ResponsiveContainer>
             </div></div>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-3">
-              {inventoryData.map(d => (
-                <div key={d.year} className={clsx(
-                  'rounded-lg p-2 text-center border',
-                  d.months > 20 ? 'border-rose-700/40 bg-rose-950/20' :
-                  d.months > 8  ? 'border-amber-700/40 bg-amber-950/20' :
-                                  'border-emerald-700/40 bg-emerald-950/20',
-                )}>
-                  <p className="text-[10px] text-slate-500">{d.year}</p>
-                  <p className={clsx('text-lg font-bold',
-                    d.months > 20 ? 'text-rose-300' : d.months > 8 ? 'text-amber-300' : 'text-emerald-300',
-                  )}>{d.months}</p>
-                  <p className="text-[9px] text-slate-600">개월</p>
-                </div>
-              ))}
-            </div>
             <p className="text-xs text-slate-500 mt-3 leading-relaxed">
-              이 수치는 <span className="text-slate-400">개별 매도자의 대기 기간이 아닙니다.</span>{' '}
-              2022년 43.6개월은 금리 급등으로 매수자가 사라지면서 <span className="text-rose-400 font-medium">월 거래량이 1,282건으로 급락</span>한 결과입니다.
-              시장이 회복된 것은 매도자들이 기다린 것이 아니라, 금리 인하·세제 완화로 <span className="text-slate-300">거래량이 다시 늘었기 때문</span>입니다.
-              높을수록 매수자에게 협상력이 있고, 낮을수록 매도자 우위 시장임을 나타냅니다.
+              <span className="inline-block w-3 h-3 rounded-sm bg-blue-500 mr-1 align-middle" />진한 파란 막대 = 확인된 거래량 ·{' '}
+              <span className="inline-block w-3 h-3 rounded-sm bg-blue-500/25 mr-1 align-middle" />흐린 막대 = 추정치 ·{' '}
+              <span className="inline-block w-3 h-3 rounded-full bg-amber-400 mr-1 align-middle" />주황 선 = 활성 매물 (2021년부터 데이터 존재).{' '}
+              2022년 거래 폭락은 금리 급등 때문이며, 매물은 오히려 꾸준히 증가해 2024년 역대 최고(85,000건)를 기록했습니다.
             </p>
           </div>
         )
