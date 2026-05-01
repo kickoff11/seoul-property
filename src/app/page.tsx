@@ -40,21 +40,12 @@ export default function Dashboard() {
       fetch('/api/demand').then(r => r.json()),
     ])
 
-    // Not enough data yet — retry (but give up waiting after seeding finishes)
-    const hasEnoughData = d.data?.length > 0 && tr.data?.length >= 3
-    if (!hasEnoughData && d.seeding) {
+    // Wait until seeding finishes — seeding now has 10s timeout per call so it
+    // always terminates. Show nothing until we have clean, complete-month data.
+    if (d.seeding || d.data?.length === 0) {
       setSeeding(true)
       setTimeout(load, 4000)
       return
-    }
-    // Seeding done (or stalled) but still thin — show whatever we have
-    if (!hasEnoughData) {
-      if (d.data?.length === 0) {
-        // Truly no data at all — keep retrying
-        setSeeding(true)
-        setTimeout(load, 4000)
-        return
-      }
     }
 
     setSeeding(false)
