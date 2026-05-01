@@ -155,25 +155,26 @@ export default function SupplyDemandPage() {
         // Annual transactions — confirmed years from MOLIT/chartngraph; estimates marked
         // Listings — confirmed from Naver Real Estate portal aggregates (May snapshot)
         // No reliable listings data exists before 2021
+        // monthlyTx = annualTx / 12 (monthly average); 2026 uses actual April figure
         const marketData = [
-          { year: '2015', annualTx: 131413, listings: null, est: false },
-          { year: '2016', annualTx: 90000,  listings: null, est: true  },
-          { year: '2017', annualTx: 72000,  listings: null, est: true  },
-          { year: '2018', annualTx: 58000,  listings: null, est: true  },
-          { year: '2019', annualTx: 71734,  listings: null, est: false },
-          { year: '2020', annualTx: 93784,  listings: null, est: false },
-          { year: '2021', annualTx: 46000,  listings: 48152, est: true },
-          { year: '2022', annualTx: 15384,  listings: 55884, est: false },
-          { year: '2023', annualTx: 36439,  listings: 62307, est: false },
-          { year: '2024', annualTx: 56000,  listings: 84797, est: true },
-          { year: '2025', annualTx: 80000,  listings: 80000, est: true },
-          { year: '2026*', annualTx: null,  listings: 74602, est: false },
+          { year: '2015', monthlyTx: Math.round(131413 / 12), listings: null,  est: false },
+          { year: '2016', monthlyTx: Math.round(90000  / 12), listings: null,  est: true  },
+          { year: '2017', monthlyTx: Math.round(72000  / 12), listings: null,  est: true  },
+          { year: '2018', monthlyTx: Math.round(58000  / 12), listings: null,  est: true  },
+          { year: '2019', monthlyTx: Math.round(71734  / 12), listings: null,  est: false },
+          { year: '2020', monthlyTx: Math.round(93784  / 12), listings: null,  est: false },
+          { year: '2021', monthlyTx: Math.round(46000  / 12), listings: 48152, est: true  },
+          { year: '2022', monthlyTx: Math.round(15384  / 12), listings: 55884, est: false },
+          { year: '2023', monthlyTx: Math.round(36439  / 12), listings: 62307, est: false },
+          { year: '2024', monthlyTx: Math.round(56000  / 12), listings: 84797, est: true  },
+          { year: '2025', monthlyTx: Math.round(80000  / 12), listings: 80000, est: true  },
+          { year: '2026*', monthlyTx: 8550,                   listings: 74602, est: false },
         ]
         return (
           <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
             <SectionHeader
-              title="매물 공급 강도 추이 — 10년 (연간 거래량 vs 활성 매물)"
-              sub="막대: 서울 아파트 연간 거래 건수 · 선: 활성 매물 수 (5월 기준 스냅샷, 2021년부터)"
+              title="매물 공급 강도 추이 — 10년 (월 거래량 vs 활성 매물)"
+              sub="막대: 서울 아파트 월평균 거래 건수 (2026년은 4월 실측) · 선: 활성 매물 수 (5월 기준 스냅샷, 2021년부터)"
               badge={<MixedBadge note="거래: 국토교통부 실거래 (확인) · 매물: 네이버부동산 보도 (2021~)" />}
             />
             <div className="overflow-x-auto"><div style={{ minWidth: 480 }}>
@@ -183,26 +184,26 @@ export default function SupplyDemandPage() {
                   <XAxis dataKey="year" tick={{ fill: '#94a3b8', fontSize: 10 }} />
                   <YAxis yAxisId="tx" orientation="left" width={52}
                     tick={{ fill: '#94a3b8', fontSize: 10 }}
-                    tickFormatter={v => `${(v / 10000).toFixed(0)}만`}
-                    domain={[0, 150000]}
+                    tickFormatter={v => `${(v / 1000).toFixed(0)}천`}
+                    domain={[0, 14000]}
                   />
                   <YAxis yAxisId="lst" orientation="right" width={56}
                     tick={{ fill: '#94a3b8', fontSize: 10 }}
                     tickFormatter={v => `${(v / 10000).toFixed(0)}만`}
-                    domain={[0, 150000]}
+                    domain={[0, 100000]}
                   />
                   <Tooltip
                     contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
                     labelStyle={{ color: '#e2e8f0' }}
                     formatter={(v: number, name: string, props: { payload?: { est?: boolean } }) => {
                       const suffix = props.payload?.est ? ' (추정)' : ''
-                      if (name === '연간 거래량') return [`${v.toLocaleString()}건${suffix}`, name]
+                      if (name === '월 거래량') return [`${v.toLocaleString()}건${suffix}`, name]
                       if (name === '활성 매물') return [`${v.toLocaleString()}건`, name]
                       return [v, name]
                     }}
                   />
                   <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
-                  <Bar yAxisId="tx" dataKey="annualTx" name="연간 거래량" radius={[3, 3, 0, 0]}>
+                  <Bar yAxisId="tx" dataKey="monthlyTx" name="월 거래량" radius={[3, 3, 0, 0]}>
                     {marketData.map((d, i) => (
                       <Cell key={i} fill={d.est ? '#3b82f640' : '#3b82f6'} />
                     ))}
