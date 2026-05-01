@@ -130,24 +130,46 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Inventory depth callout */}
-      <div className="bg-amber-900/15 border border-amber-700/40 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-        <div className="shrink-0 text-center sm:text-left">
-          <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-widest">매물 공급 강도</p>
-          <p className="text-3xl font-bold text-amber-300">8.7<span className="text-base font-normal">개월</span></p>
-          <p className="text-xs text-slate-500">균형 시장 4–6개월</p>
+      {/* Listings vs transactions callout */}
+      <div className="bg-amber-900/15 border border-amber-700/40 rounded-xl p-4">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+          <div className="shrink-0">
+            <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-widest">매물 vs 거래 (2026년 4월)</p>
+            <div className="flex items-end gap-3 mt-1">
+              <div>
+                <p className="text-2xl font-bold text-amber-300">74,600<span className="text-sm font-normal ml-0.5">건</span></p>
+                <p className="text-[10px] text-slate-500">활성 매물</p>
+              </div>
+              <p className="text-slate-600 text-lg mb-4">vs</p>
+              <div>
+                <p className="text-2xl font-bold text-blue-300">8,550<span className="text-sm font-normal ml-0.5">건</span></p>
+                <p className="text-[10px] text-slate-500">월 거래량</p>
+              </div>
+            </div>
+          </div>
+          <div className="h-px sm:h-16 sm:w-px bg-amber-800/50 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-slate-200">10년 추이: 거래는 줄고 매물은 쌓였다</p>
+            <div className="grid grid-cols-4 gap-1.5 mt-2">
+              {[
+                { year: '2020', tx: '9.4만', color: 'text-blue-300' },
+                { year: '2022', tx: '1.5만', color: 'text-rose-400' },
+                { year: '2023', tx: '3.6만', color: 'text-amber-300' },
+                { year: '2025', tx: '~8만', color: 'text-emerald-300' },
+              ].map(d => (
+                <div key={d.year} className="bg-slate-900/50 rounded p-1.5 text-center">
+                  <p className="text-[10px] text-slate-500">{d.year}</p>
+                  <p className={`text-sm font-bold ${d.color}`}>{d.tx}</p>
+                  <p className="text-[9px] text-slate-600">연간</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-amber-700 mt-2">◐ 국토교통부 실거래 · 서울경제 보도 기반</p>
+          </div>
+          <Link href="/supply-demand" className="sm:ml-auto text-xs text-amber-400 hover:text-amber-300 underline shrink-0 self-start">
+            10년 차트 →
+          </Link>
         </div>
-        <div className="h-px sm:h-12 sm:w-px bg-amber-800/50 shrink-0" />
-        <div>
-          <p className="text-sm font-semibold text-slate-200">매물 <span className="text-amber-300">74,600건</span> ÷ 월 거래 <span className="text-amber-300">~8,500건</span></p>
-          <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-            현 거래 속도 기준 이론적 소화 기간. 2022년 43.6개월(거래 동결)에서 꾸준히 개선 중. 균형권(4–6개월)의 약 2배.
-          </p>
-          <p className="text-[10px] text-amber-700 mt-1.5">◐ 서울경제 보도 (2026-04-20) 기반</p>
-        </div>
-        <Link href="/supply-demand" className="sm:ml-auto text-xs text-amber-400 hover:text-amber-300 underline shrink-0">
-          추이 차트 보기 →
-        </Link>
       </div>
 
       {/* Map */}
