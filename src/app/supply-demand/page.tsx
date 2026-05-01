@@ -182,15 +182,10 @@ export default function SupplyDemandPage() {
                 <ComposedChart data={marketData} margin={{ top: 5, right: 16, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                   <XAxis dataKey="year" tick={{ fill: '#94a3b8', fontSize: 10 }} />
-                  <YAxis yAxisId="tx" orientation="left" width={52}
+                  <YAxis width={52}
                     tick={{ fill: '#94a3b8', fontSize: 10 }}
                     tickFormatter={v => `${(v / 1000).toFixed(0)}천`}
-                    domain={[0, 14000]}
-                  />
-                  <YAxis yAxisId="lst" orientation="right" width={56}
-                    tick={{ fill: '#94a3b8', fontSize: 10 }}
-                    tickFormatter={v => `${(v / 10000).toFixed(0)}만`}
-                    domain={[0, 100000]}
+                    domain={[0, 90000]}
                   />
                   <Tooltip
                     contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
@@ -203,15 +198,15 @@ export default function SupplyDemandPage() {
                     }}
                   />
                   <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
-                  <Bar yAxisId="tx" dataKey="monthlyTx" name="월 거래량" radius={[3, 3, 0, 0]}>
+                  <Bar dataKey="monthlyTx" name="월 거래량" radius={[3, 3, 0, 0]}>
                     {marketData.map((d, i) => (
                       <Cell key={i} fill={d.est ? '#3b82f640' : '#3b82f6'} />
                     ))}
                   </Bar>
-                  <Line yAxisId="lst" type="monotone" dataKey="listings" name="활성 매물"
+                  <Line type="monotone" dataKey="listings" name="활성 매물"
                     stroke="#f59e0b" strokeWidth={2.5}
-                    dot={(props: { cx: number; cy: number }) => (
-                      <circle key={`dot-${props.cx}`} cx={props.cx} cy={props.cy} r={4} fill="#f59e0b" stroke="#f59e0b" />
+                    dot={({ cx, cy }: { cx: number; cy: number }) => (
+                      <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={4} fill="#f59e0b" stroke="#f59e0b" />
                     )}
                     connectNulls={false}
                   />
