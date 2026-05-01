@@ -40,11 +40,21 @@ export default function Dashboard() {
       fetch('/api/demand').then(r => r.json()),
     ])
 
-    // No data at all yet (very start of cold boot) — retry
-    if (d.data?.length === 0 || tr.data?.length === 0) {
+    // Not enough data yet — retry (but give up waiting after seeding finishes)
+    const hasEnoughData = d.data?.length > 0 && tr.data?.length >= 3
+    if (!hasEnoughData && d.seeding) {
       setSeeding(true)
       setTimeout(load, 4000)
       return
+    }
+    // Seeding done (or stalled) but still thin — show whatever we have
+    if (!hasEnoughData) {
+      if (d.data?.length === 0) {
+        // Truly no data at all — keep retrying
+        setSeeding(true)
+        setTimeout(load, 4000)
+        return
+      }
     }
 
     setSeeding(false)
