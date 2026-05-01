@@ -177,16 +177,18 @@ function getListingsAbsorptionSignal(monthlyTx: number | null): TimingSignal {
     absorptionPct < 15 ? 'red' :
     absorptionPct < 25 ? 'yellow' : 'green'
 
+  const monthsInventory = parseFloat((ACTIVE_LISTINGS / txCount).toFixed(1))
+
   return {
     id:           'absorption',
-    name:         '매물 소화율 (매물 대비 거래)',
-    currentValue: `활성 매물 약 ${ACTIVE_LISTINGS.toLocaleString()}건 · 월 거래 ${txCount.toLocaleString()}건 → 소화율 ${absorptionPct}%`,
+    name:         '매물 재고지수 (현 매물 소화에 걸리는 기간)',
+    currentValue: `매물 ${ACTIVE_LISTINGS.toLocaleString()}건 ÷ 월 거래 ${txCount.toLocaleString()}건 → ${monthsInventory}개월 (균형 4–6개월)`,
     status,
-    statusLabel:  status === 'red' ? '낮음 (개선 중)' : status === 'yellow' ? '저조' : '정상',
-    forBuyer:     `서울 아파트 매물이 한 달 새 80,080건 → 74,600건으로 급감했고 거래는 오히려 증가하고 있습니다. 다주택자 양도세 유예가 2026년 5월 9일 종료되면서 매도 물량이 일시 집중된 영향입니다. 소화율 ${absorptionPct}%는 여전히 낮은 수준이나 방향은 매도자 우위로 전환 중. 세제 이벤트 종료 이후 시장 방향을 주시해야 합니다.`,
-    targetToFlip: '5월 9일 유예 종료 후 매물 재증가 여부 확인 필요',
+    statusLabel:  status === 'red' ? `${monthsInventory}개월 (과잉)` : status === 'yellow' ? `${monthsInventory}개월 (초과)` : '균형',
+    forBuyer:     `현 매물을 모두 소화하려면 ${monthsInventory}개월이 필요합니다. 2022년 금리 급등 때는 43.6개월까지 치솟았다가 꾸준히 낮아지는 중입니다. 다만 균형권(4–6개월)의 약 두 배로 여전히 매수자가 협상력을 갖는 구간. 다주택자 양도세 유예(5/9 종료) 이후 방향이 바뀔 수 있어 주시가 필요합니다.`,
+    targetToFlip: '재고지수 6개월 이하 → yellow / 4개월 이하 → green (매도자 우위 전환)',
     isReal:       false,
-    source:       '서울경제 보도 (2026-04-20/21) · 서울시 부동산거래정보광장',
+    source:       '서울경제 보도 (2026-04-20) · 한국금융신문 (2024-05-17) 기반 추정',
     riskIfIgnored: 'buy_risk',
   }
 }

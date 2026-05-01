@@ -150,6 +150,67 @@ export default function SupplyDemandPage() {
         </div>
       </div>
 
+      {/* Inventory depth trend */}
+      {(() => {
+        const inventoryData = [
+          { year: '2021', listings: 48152, monthlyTx: 5800, months: 8.3 },
+          { year: '2022', listings: 55884, monthlyTx: 1282, months: 43.6 },
+          { year: '2023', listings: 62307, monthlyTx: 3037, months: 20.5 },
+          { year: '2024', listings: 84797, monthlyTx: 4296, months: 19.7 },
+          { year: '2025', listings: 80000, monthlyTx: 6760, months: 11.8 },
+          { year: '2026.04', listings: 74602, monthlyTx: 8550, months: 8.7 },
+        ]
+        return (
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+            <SectionHeader
+              title="매물 재고지수 추이 (월 기준)"
+              sub="재고지수 = 활성 매물 ÷ 월 거래량 · 4–6개월 = 균형 시장 · 높을수록 매수자 유리"
+              badge={<EstBadge note="매물: 네이버부동산 보도 집계 · 거래: 국토교통부·서울경제 보도" />}
+            />
+            <div className="overflow-x-auto"><div style={{ minWidth: 320 }}>
+              <ResponsiveContainer width="100%" height={240}>
+                <LineChart data={inventoryData} margin={{ top: 5, right: 16, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="year" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                  <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={v => `${v}개월`} width={52} />
+                  <Tooltip
+                    contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
+                    labelStyle={{ color: '#e2e8f0' }}
+                    formatter={(v: number, name: string) => {
+                      if (name === '재고지수') return [`${v}개월`, '재고지수']
+                      return [v.toLocaleString(), name]
+                    }}
+                  />
+                  <ReferenceLine y={6}  stroke="#10b981" strokeDasharray="4 3" label={{ value: '균형 (6개월)', fill: '#10b981', fontSize: 10, position: 'insideTopRight' }} />
+                  <ReferenceLine y={4}  stroke="#3b82f6" strokeDasharray="4 3" label={{ value: '매도자 유리 (4개월)', fill: '#3b82f6', fontSize: 10, position: 'insideBottomRight' }} />
+                  <Line type="monotone" dataKey="months" name="재고지수" stroke="#f59e0b" strokeWidth={2.5} dot={{ fill: '#f59e0b', r: 4 }} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div></div>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-3">
+              {inventoryData.map(d => (
+                <div key={d.year} className={clsx(
+                  'rounded-lg p-2 text-center border',
+                  d.months > 20 ? 'border-rose-700/40 bg-rose-950/20' :
+                  d.months > 8  ? 'border-amber-700/40 bg-amber-950/20' :
+                                  'border-emerald-700/40 bg-emerald-950/20',
+                )}>
+                  <p className="text-[10px] text-slate-500">{d.year}</p>
+                  <p className={clsx('text-lg font-bold',
+                    d.months > 20 ? 'text-rose-300' : d.months > 8 ? 'text-amber-300' : 'text-emerald-300',
+                  )}>{d.months}</p>
+                  <p className="text-[9px] text-slate-600">개월</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-slate-500 mt-3 leading-relaxed">
+              2022년 금리 급등으로 거래가 사실상 동결되며 재고지수가 <span className="text-rose-400 font-medium">43.6개월</span>까지 치솟았습니다.
+              이후 금리 인하·세제 완화로 거래가 회복되며 2026년 4월 기준 <span className="text-amber-300 font-medium">8.7개월</span>로 낮아졌으나, 여전히 균형권(4–6개월)의 약 두 배 수준입니다.
+            </p>
+          </div>
+        )
+      })()}
+
       {/* Tabs */}
       <div className="flex gap-2 border-b border-slate-700 pb-1">
         {(['supply', 'demand'] as Tab[]).map(t => (

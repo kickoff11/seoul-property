@@ -129,23 +129,23 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Absorption rate callout */}
+      {/* Inventory depth callout */}
       <div className="bg-amber-900/15 border border-amber-700/40 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="shrink-0 text-center sm:text-left">
-          <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-widest">매물 소화율</p>
-          <p className="text-3xl font-bold text-amber-300">~11%</p>
-          <p className="text-xs text-slate-500">정상 시장 25-35%</p>
+          <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-widest">매물 재고지수</p>
+          <p className="text-3xl font-bold text-amber-300">8.7<span className="text-base font-normal">개월</span></p>
+          <p className="text-xs text-slate-500">균형 시장 4–6개월</p>
         </div>
         <div className="h-px sm:h-12 sm:w-px bg-amber-800/50 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-slate-200">매물 <span className="text-amber-300">74,600건</span> · 월 거래 <span className="text-amber-300">~8,500건</span></p>
+          <p className="text-sm font-semibold text-slate-200">매물 <span className="text-amber-300">74,600건</span> ÷ 월 거래 <span className="text-amber-300">~8,500건</span></p>
           <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-            소화율은 여전히 낮지만 다주택자 양도세 유예(5/9 종료) 앞두고 매물은 감소·거래는 증가 중. 이벤트 종료 후 방향 주목.
+            2022년 43.6개월(사실상 동결)에서 꾸준히 낮아지는 중. 여전히 균형권의 약 2배 — 매수자 협상력 유효.
           </p>
           <p className="text-[10px] text-amber-700 mt-1.5">◐ 서울경제 보도 (2026-04-20) 기반</p>
         </div>
-        <Link href="/timing" className="sm:ml-auto text-xs text-amber-400 hover:text-amber-300 underline shrink-0">
-          매수 타이밍 분석 →
+        <Link href="/supply-demand" className="sm:ml-auto text-xs text-amber-400 hover:text-amber-300 underline shrink-0">
+          추이 차트 보기 →
         </Link>
       </div>
 
