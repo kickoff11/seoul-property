@@ -1,8 +1,28 @@
+'use client'
+
 import { DistrictSummary } from '@/types'
 import { fmt, fmtPricePerM2 } from '@/lib/analysis'
 
 interface Props {
   data: DistrictSummary[]
+}
+
+function downloadCSV(rows: DistrictSummary[]) {
+  const headers = ['순위', '구', '거래건수', '평균m²당(만원)', '평균거래가(만원)', '최저가(만원)', '최고가(만원)']
+  const lines = rows.map((d, i) => [
+    i + 1, d.gu, d.count,
+    Math.round(d.avgPricePerM2), Math.round(d.avgAmount),
+    Math.round(d.minAmount), Math.round(d.maxAmount),
+  ].map(v => `"${String(v ?? '')}"`).join(','))
+
+  const csv  = [headers.join(','), ...lines].join('\n')
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href     = url
+  a.download = `seoul-district-ranking-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 export default function DistrictRanking({ data }: Props) {
@@ -11,9 +31,17 @@ export default function DistrictRanking({ data }: Props) {
 
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
-      <div className="p-4 border-b border-slate-700">
-        <h3 className="text-sm font-semibold text-slate-300">구별 평균 m²당 가격 순위</h3>
-        <p className="text-xs text-slate-500 mt-0.5">최근 6개월 실거래가 기준</p>
+      <div className="p-4 border-b border-slate-700 flex items-center justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-300">구별 평균 m²당 가격 순위</h3>
+          <p className="text-xs text-slate-500 mt-0.5">최근 6개월 실거래가 기준</p>
+        </div>
+        <button
+          onClick={() => downloadCSV(sorted)}
+          className="text-xs text-slate-400 hover:text-slate-200 border border-slate-600 hover:border-slate-500 rounded px-2.5 py-1 transition-colors whitespace-nowrap shrink-0"
+        >
+          CSV 내보내기
+        </button>
       </div>
       <div className="divide-y divide-slate-700/50 max-h-[440px] overflow-y-auto">
         {sorted.map((d, i) => (

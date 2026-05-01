@@ -411,17 +411,16 @@ export default function RealityPage() {
       </div>
 
       {/* Chart 5: Jeonse ratio — custom bar table */}
-      {data.hasPriceData && data.jeonseByGu.length > 0 && (
+      {data.jeonseByGu.length > 0 && (
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
           <SectionHeader
             title="구별 전세가율 (전세가격지수 ÷ 매매가격지수)"
             badge={
-              <RealBadge
-                source="부동산원 R-ONE"
-                detail={`한국부동산원 아파트 전세가격지수 (A_2024_00045) · 기준월: ${data.priceDataMonth}`}
-              />
+              data.hasPriceData
+                ? <RealBadge source="부동산원 R-ONE" detail={`아파트 전세가격지수 (A_2024_00045) · 기준월: ${data.priceDataMonth}`} />
+                : <EstBadge note="R-ONE API 미연결 — 2025년 1월 스냅샷 데이터" />
             }
-            sub={`전세가율이 높을수록 갭투자·역전세 리스크 증가. 70% 이상 경보구간.${data.priceDataMonth ? ` 기준월: ${fmtYm(data.priceDataMonth)}` : ''}`}
+            sub={`전세가율이 높을수록 갭투자·역전세 리스크 증가. 70% 이상 경보구간.${data.priceDataMonth ? ` 기준월: ${fmtYm(data.priceDataMonth)}` : ' (2025년 1월 스냅샷)'}`}
           />
 
           {/* Legend */}

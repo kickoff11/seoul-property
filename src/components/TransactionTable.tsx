@@ -1,9 +1,37 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { ApartmentTransaction } from '@/types'
 import { fmt, fmtPricePerM2 } from '@/lib/analysis'
+import { useWatchlist, WatchButton } from '@/components/Watchlist'
 import clsx from 'clsx'
+
+function downloadCSV(rows: ApartmentTransaction[], showDistrict: boolean) {
+  const headers = [
+    '거래일', ...(showDistrict ? ['구'] : []), '아파트', '법정동',
+    '거래금액(만원)', '전용면적(m²)', 'm²당(만원)', '층',
+  ]
+  const lines = rows.map(t => [
+    t.dealDate,
+    ...(showDistrict ? [t.gu] : []),
+    t.aptName,
+    t.dong,
+    t.amount,
+    t.area,
+    t.pricePerM2,
+    t.floor,
+  ].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+
+  const csv  = [headers.join(','), ...lines].join('\n')
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href     = url
+  a.download = `seoul-transactions-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 interface Props {
   data: ApartmentTransaction[]
@@ -23,6 +51,7 @@ export default function TransactionTable({ data, showDistrict = true }: Props) {
   const [sort, setSort] = useState<SortKey>('dealDate')
   const [asc, setAsc]   = useState(false)
   const [search, setSearch] = useState('')
+  const { add, remove, isWatched } = useWatchlist()
 
   function toggle(key: SortKey) {
     if (sort === key) setAsc(a => !a)
@@ -63,6 +92,12 @@ export default function TransactionTable({ data, showDistrict = true }: Props) {
           onChange={e => setSearch(e.target.value)}
         />
         <span className="text-xs text-slate-500 sm:ml-auto">{sorted.length.toLocaleString()}건</span>
+        <button
+          onClick={() => downloadCSV(sorted, showDistrict)}
+          className="text-xs text-slate-400 hover:text-slate-200 border border-slate-600 hover:border-slate-500 rounded px-2.5 py-1 transition-colors whitespace-nowrap"
+        >
+          CSV 내보내기
+        </button>
 
         {/* Mobile sort pills */}
         <div className="flex gap-1.5 w-full sm:hidden">
@@ -89,7 +124,15 @@ export default function TransactionTable({ data, showDistrict = true }: Props) {
           <div key={t.id} className="px-4 py-3">
             {/* Row 1: apt name + price */}
             <div className="flex items-start justify-between gap-2">
-              <p className="text-sm font-semibold text-slate-100 leading-snug">{t.aptName}</p>
+              <div className="flex items-center gap-1 min-w-0">
+                <WatchButton aptName={t.aptName} gu={t.gu} isWatched={isWatched(t.aptName, t.gu)} onAdd={add} onRemove={remove} size="xs" />
+                <Link
+                  href={`/complex?name=${encodeURIComponent(t.aptName)}&gu=${encodeURIComponent(t.gu)}`}
+                  className="text-sm font-semibold text-slate-100 hover:text-blue-300 transition-colors leading-snug"
+                >
+                  {t.aptName}
+                </Link>
+              </div>
               <p className="text-base font-bold text-blue-300 whitespace-nowrap shrink-0">{fmt(t.amount)}</p>
             </div>
             {/* Row 2: meta */}
@@ -135,7 +178,17 @@ export default function TransactionTable({ data, showDistrict = true }: Props) {
               <tr key={t.id} className="hover:bg-slate-700/30 transition-colors">
                 <td className="px-3 py-2 text-slate-400 text-xs whitespace-nowrap">{t.dealDate}</td>
                 {showDistrict && <td className="px-3 py-2 text-slate-300 text-xs">{t.gu}</td>}
-                <td className="px-3 py-2 font-medium text-slate-200 whitespace-nowrap">{t.aptName}</td>
+                <td className="px-3 py-2 font-medium whitespace-nowrap">
+                  <div className="flex items-center gap-1">
+                    <WatchButton aptName={t.aptName} gu={t.gu} isWatched={isWatched(t.aptName, t.gu)} onAdd={add} onRemove={remove} size="xs" />
+                    <Link
+                      href={`/complex?name=${encodeURIComponent(t.aptName)}&gu=${encodeURIComponent(t.gu)}`}
+                      className="text-slate-200 hover:text-blue-300 transition-colors"
+                    >
+                      {t.aptName}
+                    </Link>
+                  </div>
+                </td>
                 <td className="px-3 py-2 text-slate-400 text-xs">{t.dong}</td>
                 <td className="px-3 py-2 text-blue-300 font-semibold whitespace-nowrap">{fmt(t.amount)}</td>
                 <td className="px-3 py-2 text-slate-300 text-xs whitespace-nowrap">{t.area}m²</td>

@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import {
-  FACT_CHECKS, SELLER_DENIAL, DISTRICT_ASK_GAP,
+  FACT_CHECKS, SELLER_DENIAL, DISTRICT_ASK_GAP, JEONSE_BY_GU_SNAPSHOT,
 } from '@/lib/market-reality'
 import { ensureSeeded } from '@/lib/seed'
 import { getMonthlyVolume } from '@/lib/db'
@@ -173,6 +173,11 @@ export async function GET() {
   const VOLUME_HISTORICAL_AVERAGE = 6500 // 2015-2019 평균 (부동산원 공표 수치)
   const VOLUME_PEAK = 11200              // 2020-07
 
+  // Use live jeonse data when available; fall back to static snapshot
+  const jeonseByGu = priceData.jeonseByGu.length > 0
+    ? priceData.jeonseByGu
+    : JEONSE_BY_GU_SNAPSHOT
+
   return NextResponse.json({
     // Real data from MOLIT DB
     monthlyVolume: realVolume,
@@ -182,7 +187,7 @@ export async function GET() {
 
     // Real data from R-ONE price index (if API key set)
     priceIndexSeries:  priceData.priceIndexSeries,
-    jeonseByGu:        priceData.jeonseByGu,
+    jeonseByGu,
     hasPriceData:      priceData.hasPriceData,
     priceDataMonth:    priceData.dataMonth,
     peakIndex:         priceData.peakIndex,

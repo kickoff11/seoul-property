@@ -286,6 +286,52 @@ export function getMonthlyMedianPrices(): { month: string; medianPrice: number }
     .sort((a, b) => a.month.localeCompare(b.month))
 }
 
+/**
+ * Returns how many hours ago the oldest cached entry was fetched.
+ * Returns null if the cache is empty (never fetched).
+ */
+/** All transactions for a named complex, most-recent-first */
+export function getComplexTransactions(aptName: string, gu?: string): ApartmentTransaction[] {
+  const conds = ['apt_name = ?']
+  const params: (string | number)[] = [aptName]
+  if (gu) { conds.push('gu = ?'); params.push(gu) }
+  const rows = getDb()
+    .prepare(`SELECT * FROM transactions WHERE ${conds.join(' AND ')} ORDER BY deal_date DESC LIMIT 500`)
+    .all(...params) as Record<string, unknown>[]
+  return rows.map(rowToTx)
+}
+
+/** Monthly trends for a specific complex */
+export function getComplexMonthlyTrends(aptName: string, gu?: string): {
+  month: string; avgAmount: number; avgPricePerM2: number; count: number
+}[] {
+  const conds = ['apt_name = ?']
+  const params: (string | number)[] = [aptName]
+  if (gu) { conds.push('gu = ?'); params.push(gu) }
+  return getDb().prepare(`
+    SELECT * FROM (
+      SELECT
+        deal_year  || '-' || printf('%02d', deal_month) AS month,
+        AVG(amount)        AS avgAmount,
+        AVG(price_per_m2)  AS avgPricePerM2,
+        COUNT(*)           AS count
+      FROM transactions
+      WHERE ${conds.join(' AND ')}
+      GROUP BY deal_year, deal_month
+      ORDER BY deal_year DESC, deal_month DESC
+      LIMIT 24
+    ) ORDER BY month ASC
+  `).all(...params) as { month: string; avgAmount: number; avgPricePerM2: number; count: number }[]
+}
+
+export function getDataFreshnessHours(): number | null {
+  const row = getDb()
+    .prepare('SELECT MIN(fetched_at) AS oldest FROM fetch_log')
+    .get() as { oldest: string | null } | undefined
+  if (!row?.oldest) return null
+  return Math.round((Date.now() - new Date(row.oldest).getTime()) / 3_600_000)
+}
+
 export function getInactiveComplexes(monthsThreshold = 18) {
   const cutoff = new Date()
   cutoff.setMonth(cutoff.getMonth() - monthsThreshold)
