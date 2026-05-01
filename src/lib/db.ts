@@ -219,7 +219,7 @@ export function getMonthlyTrends(lawdCd?: string) {
       GROUP BY deal_year, deal_month
       ${having}
       ORDER BY deal_year DESC, deal_month DESC
-      LIMIT 12
+      LIMIT 24
     ) ORDER BY dealYear ASC, dealMonth ASC
   `).all() as {
     dealYear: number; dealMonth: number; count: number; districtCount: number

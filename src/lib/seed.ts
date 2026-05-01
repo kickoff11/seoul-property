@@ -18,7 +18,7 @@ const REFRESH_INTERVAL_MS = 60 * 60 * 1_000
 let lastRefreshedAt = 0
 let activeSeed: Promise<void> | null = null   // prevent concurrent seeds
 
-export function ensureSeeded(months = 6): void {
+export function ensureSeeded(months = 12): void {
   if (activeSeed) return   // seed already running
 
   const count = getTotalCount()
