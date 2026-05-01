@@ -165,13 +165,14 @@ function getSupplySignal(supply2026: number, demandBaseline: number): TimingSign
 }
 
 function getListingsAbsorptionSignal(monthlyTx: number | null): TimingSignal {
-  // Active listings from Naver Real Estate / Zigbang portal aggregates (reported Q1 2025)
-  const ACTIVE_LISTINGS = 87_000
-  const txCount = monthlyTx ?? 8_000
+  // Active listings: Seoul apartment listings as of April 2026 (Seoul Economic Daily, 2026-04-20)
+  // Down from 80,080 a month prior — shrinking due to pre-May-9 tax deadline surge
+  const ACTIVE_LISTINGS = 74_600
+  // March 2026 was 8,550 deals; April on pace for ~9,000+ (tax deadline spike)
+  const txCount = monthlyTx ?? 8_550
   const absorptionPct = parseFloat((txCount / ACTIVE_LISTINGS * 100).toFixed(1))
 
-  // < 15% absorption = red (extreme buyer's market — sellers far outnumber buyers)
-  // < 25% = yellow, >= 25% = green
+  // < 15% = red, < 25% = yellow, >= 25% = green
   const status: SignalStatus =
     absorptionPct < 15 ? 'red' :
     absorptionPct < 25 ? 'yellow' : 'green'
@@ -179,13 +180,13 @@ function getListingsAbsorptionSignal(monthlyTx: number | null): TimingSignal {
   return {
     id:           'absorption',
     name:         '매물 소화율 (매물 대비 거래)',
-    currentValue: `활성 매물 ${ACTIVE_LISTINGS.toLocaleString()}건 대비 월 거래 ${txCount.toLocaleString()}건 → 소화율 ${absorptionPct}%`,
+    currentValue: `활성 매물 약 ${ACTIVE_LISTINGS.toLocaleString()}건 · 월 거래 ${txCount.toLocaleString()}건 → 소화율 ${absorptionPct}%`,
     status,
-    statusLabel:  status === 'red' ? '극도로 낮음' : status === 'yellow' ? '저조' : '정상',
-    forBuyer:     `서울 아파트 매물이 ${ACTIVE_LISTINGS.toLocaleString()}건 나와 있는데 한 달에 실제로 팔리는 건 ${txCount.toLocaleString()}건뿐입니다. 소화율 ${absorptionPct}%는 정상 시장(25-35%)의 절반도 안 됩니다. 매도자 간 경쟁이 심해 지금은 매수자가 협상력을 갖는 구간입니다.`,
-    targetToFlip: '월 거래량 22,000건 이상 (소화율 25%) → yellow',
+    statusLabel:  status === 'red' ? '낮음 (개선 중)' : status === 'yellow' ? '저조' : '정상',
+    forBuyer:     `서울 아파트 매물이 한 달 새 80,080건 → 74,600건으로 급감했고 거래는 오히려 증가하고 있습니다. 다주택자 양도세 유예가 2026년 5월 9일 종료되면서 매도 물량이 일시 집중된 영향입니다. 소화율 ${absorptionPct}%는 여전히 낮은 수준이나 방향은 매도자 우위로 전환 중. 세제 이벤트 종료 이후 시장 방향을 주시해야 합니다.`,
+    targetToFlip: '5월 9일 유예 종료 후 매물 재증가 여부 확인 필요',
     isReal:       false,
-    source:       '네이버부동산·직방 매물 집계 (2025년 기준 보도 추정치)',
+    source:       '서울경제 보도 (2026-04-20/21) · 서울시 부동산거래정보광장',
     riskIfIgnored: 'buy_risk',
   }
 }

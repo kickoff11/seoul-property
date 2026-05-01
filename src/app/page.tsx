@@ -130,21 +130,21 @@ export default function Dashboard() {
       </div>
 
       {/* Absorption rate callout */}
-      <div className="bg-rose-900/15 border border-rose-700/40 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+      <div className="bg-amber-900/15 border border-amber-700/40 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="shrink-0 text-center sm:text-left">
-          <p className="text-[10px] font-semibold text-rose-400 uppercase tracking-widest">매물 소화율</p>
-          <p className="text-3xl font-bold text-rose-300">~9%</p>
+          <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-widest">매물 소화율</p>
+          <p className="text-3xl font-bold text-amber-300">~11%</p>
           <p className="text-xs text-slate-500">정상 시장 25-35%</p>
         </div>
-        <div className="h-px sm:h-12 sm:w-px bg-rose-800/50 shrink-0" />
+        <div className="h-px sm:h-12 sm:w-px bg-amber-800/50 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-slate-200">매물 <span className="text-rose-300">87,000건</span> 중 한 달에 팔리는 건 <span className="text-rose-300">~8,000건</span></p>
+          <p className="text-sm font-semibold text-slate-200">매물 <span className="text-amber-300">74,600건</span> · 월 거래 <span className="text-amber-300">~8,500건</span></p>
           <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-            11채 중 1채만 팔리는 극심한 매도자 우위 시장. 매수자는 지금 강한 협상력을 갖습니다.
+            소화율은 여전히 낮지만 다주택자 양도세 유예(5/9 종료) 앞두고 매물은 감소·거래는 증가 중. 이벤트 종료 후 방향 주목.
           </p>
-          <p className="text-[10px] text-amber-700 mt-1.5">◐ 네이버부동산·직방 매물 집계 기반 추정 (2025년)</p>
+          <p className="text-[10px] text-amber-700 mt-1.5">◐ 서울경제 보도 (2026-04-20) 기반</p>
         </div>
-        <Link href="/timing" className="sm:ml-auto text-xs text-rose-400 hover:text-rose-300 underline shrink-0">
+        <Link href="/timing" className="sm:ml-auto text-xs text-amber-400 hover:text-amber-300 underline shrink-0">
           매수 타이밍 분석 →
         </Link>
       </div>
