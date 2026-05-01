@@ -96,6 +96,7 @@ export async function fetchTransactionsFromApi(
     const res = await fetch(url.toString(), {
       headers: { 'User-Agent': 'Mozilla/5.0' },
       next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(10_000),
     })
     if (!res.ok) throw new Error(`MOLIT API ${res.status}: ${await res.text()}`)
 

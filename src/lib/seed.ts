@@ -52,8 +52,12 @@ async function seedMonths(months: number): Promise<void> {
     await Promise.all(
       SEOUL_DISTRICTS.map(async district => {
         if (!isCached(district.code, ymd)) {
-          const txs = await fetchTransactionsFromApi(district.code, ymd)
-          saveTransactions(txs, district.code, ymd)
+          try {
+            const txs = await fetchTransactionsFromApi(district.code, ymd)
+            saveTransactions(txs, district.code, ymd)
+          } catch (err) {
+            console.warn(`[seed] skipping ${district.name} ${ymd}:`, (err as Error).message)
+          }
         }
       })
     )

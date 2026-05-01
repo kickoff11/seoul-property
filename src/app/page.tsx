@@ -40,8 +40,8 @@ export default function Dashboard() {
       fetch('/api/demand').then(r => r.json()),
     ])
 
-    // Server is still seeding (cold start) — retry in 4 s
-    if (d.seeding || d.data?.length === 0 || tr.data?.length < 5) {
+    // No data at all yet (very start of cold boot) — retry
+    if (d.data?.length === 0 || tr.data?.length === 0) {
       setSeeding(true)
       setTimeout(load, 4000)
       return
