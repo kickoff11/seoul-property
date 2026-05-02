@@ -61,6 +61,11 @@ export interface DistrictAskGap {
   prePeakGapPct: number  // 2020년 정상 시장 기준 갭 (%)
   // Category drives colour grouping in the chart
   category: 'premium' | 'mid' | 'outer'
+  // What closed the gap from peak to current?
+  //   tx_recovery      — transaction prices rose toward asking prices (buyer-driven)
+  //   listing_reduction — sellers cut asking prices toward market (seller-driven)
+  //   mixed            — both factors contributed roughly equally
+  driver: 'tx_recovery' | 'listing_reduction' | 'mixed'
 }
 
 // ── Monthly transaction volume ─────────────────────────────────
@@ -218,22 +223,26 @@ export const SELLER_DENIAL: SellerDenialByDistrict[] = [
 // peakGapPct:    worst point early 2023 when denial was at maximum
 // currentGapPct: current reading (2025 Q1)
 export const DISTRICT_ASK_GAP: DistrictAskGap[] = [
-  // Premium inner districts — more liquid, pragmatic sellers
-  { gu: '강남구',   currentGapPct:  7.2, peakGapPct: 11.8, prePeakGapPct: 1.4, category: 'premium' },
-  { gu: '서초구',   currentGapPct:  8.1, peakGapPct: 12.6, prePeakGapPct: 1.5, category: 'premium' },
-  { gu: '송파구',   currentGapPct:  6.9, peakGapPct: 11.2, prePeakGapPct: 1.3, category: 'premium' },
-  { gu: '용산구',   currentGapPct:  9.8, peakGapPct: 15.4, prePeakGapPct: 1.6, category: 'premium' },
-  // Mid-tier districts
-  { gu: '마포구',   currentGapPct:  9.4, peakGapPct: 16.1, prePeakGapPct: 1.4, category: 'mid' },
-  { gu: '성동구',   currentGapPct:  8.6, peakGapPct: 14.8, prePeakGapPct: 1.3, category: 'mid' },
-  { gu: '동작구',   currentGapPct: 11.2, peakGapPct: 18.3, prePeakGapPct: 1.5, category: 'mid' },
-  { gu: '영등포구', currentGapPct: 10.6, peakGapPct: 17.4, prePeakGapPct: 1.4, category: 'mid' },
-  { gu: '양천구',   currentGapPct: 11.8, peakGapPct: 19.2, prePeakGapPct: 1.5, category: 'mid' },
-  { gu: '강서구',   currentGapPct: 13.1, peakGapPct: 20.9, prePeakGapPct: 1.6, category: 'mid' },
-  // Outer districts — highest denial, most leveraged buyers
-  { gu: '은평구',   currentGapPct: 14.2, peakGapPct: 22.4, prePeakGapPct: 1.7, category: 'outer' },
-  { gu: '성북구',   currentGapPct: 14.6, peakGapPct: 23.1, prePeakGapPct: 1.7, category: 'outer' },
-  { gu: '노원구',   currentGapPct: 16.3, peakGapPct: 25.8, prePeakGapPct: 1.8, category: 'outer' },
-  { gu: '강북구',   currentGapPct: 17.1, peakGapPct: 26.7, prePeakGapPct: 1.8, category: 'outer' },
-  { gu: '도봉구',   currentGapPct: 17.8, peakGapPct: 27.4, prePeakGapPct: 1.9, category: 'outer' },
+  // Premium inner districts — gap narrowed because transaction prices recovered (R-ONE at all-time highs)
+  // Buyers are willing to pay close to asking; sellers didn't need to cut
+  { gu: '강남구',   currentGapPct:  7.2, peakGapPct: 11.8, prePeakGapPct: 1.4, category: 'premium', driver: 'tx_recovery'       },
+  { gu: '서초구',   currentGapPct:  8.1, peakGapPct: 12.6, prePeakGapPct: 1.5, category: 'premium', driver: 'tx_recovery'       },
+  { gu: '송파구',   currentGapPct:  6.9, peakGapPct: 11.2, prePeakGapPct: 1.3, category: 'premium', driver: 'tx_recovery'       },
+  // 용산: strong recovery but sellers also adjusted after Itaewon hype overpricing
+  { gu: '용산구',   currentGapPct:  9.8, peakGapPct: 15.4, prePeakGapPct: 1.6, category: 'premium', driver: 'mixed'             },
+  // Mid-tier: 성동/마포 have genuine demand recovery (Seongsu, Mapo corridors)
+  // Others saw more seller concessions mixed with modest price recovery
+  { gu: '마포구',   currentGapPct:  9.4, peakGapPct: 16.1, prePeakGapPct: 1.4, category: 'mid',     driver: 'mixed'             },
+  { gu: '성동구',   currentGapPct:  8.6, peakGapPct: 14.8, prePeakGapPct: 1.3, category: 'mid',     driver: 'tx_recovery'       },
+  { gu: '동작구',   currentGapPct: 11.2, peakGapPct: 18.3, prePeakGapPct: 1.5, category: 'mid',     driver: 'mixed'             },
+  { gu: '영등포구', currentGapPct: 10.6, peakGapPct: 17.4, prePeakGapPct: 1.4, category: 'mid',     driver: 'mixed'             },
+  { gu: '양천구',   currentGapPct: 11.8, peakGapPct: 19.2, prePeakGapPct: 1.5, category: 'mid',     driver: 'listing_reduction' },
+  { gu: '강서구',   currentGapPct: 13.1, peakGapPct: 20.9, prePeakGapPct: 1.6, category: 'mid',     driver: 'listing_reduction' },
+  // Outer districts — gap narrowed mainly because sellers had to cut asking prices;
+  // transaction prices haven't materially recovered in these areas
+  { gu: '은평구',   currentGapPct: 14.2, peakGapPct: 22.4, prePeakGapPct: 1.7, category: 'outer',   driver: 'listing_reduction' },
+  { gu: '성북구',   currentGapPct: 14.6, peakGapPct: 23.1, prePeakGapPct: 1.7, category: 'outer',   driver: 'listing_reduction' },
+  { gu: '노원구',   currentGapPct: 16.3, peakGapPct: 25.8, prePeakGapPct: 1.8, category: 'outer',   driver: 'listing_reduction' },
+  { gu: '강북구',   currentGapPct: 17.1, peakGapPct: 26.7, prePeakGapPct: 1.8, category: 'outer',   driver: 'listing_reduction' },
+  { gu: '도봉구',   currentGapPct: 17.8, peakGapPct: 27.4, prePeakGapPct: 1.9, category: 'outer',   driver: 'listing_reduction' },
 ]

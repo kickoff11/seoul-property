@@ -368,46 +368,98 @@ export default function RealityPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-        <div style={{ minWidth: 320 }}>
-        <ResponsiveContainer width="100%" height={500}>
-          <BarChart data={districtGapChart} layout="vertical" margin={{ top: 5, right: 40, left: 5, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
-            <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 10 }}
-              tickFormatter={v => `${v}%`} domain={[0, 30]} />
-            <YAxis type="category" dataKey="gu" tick={{ fill: '#94a3b8', fontSize: 11 }} width={72} />
-            <Tooltip
-              contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
-              formatter={(v: number, name: string) => [`${(v as number).toFixed(1)}%`, name]}
-            />
-            <ReferenceLine x={2} stroke="#10b981" strokeDasharray="5 3"
-              label={{ value: '정상 (2%)', fill: '#10b981', fontSize: 10, position: 'insideTopRight' }} />
-            <Bar dataKey="peakGapPct" name="2023년 최고 갭" radius={[0, 3, 3, 0]}>
-              {districtGapChart.map((d, i) => (
-                <Cell key={`peak-${i}`} fill={`${CATEGORY_COLOR[d.category]}40`} />
-              ))}
-            </Bar>
-            <Bar dataKey="currentGapPct" name="현재 갭 (2025 Q1)" radius={[0, 3, 3, 0]}>
-              {districtGapChart.map((d, i) => (
-                <Cell key={`curr-${i}`} fill={CATEGORY_COLOR[d.category]} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-        </div>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-4 text-xs text-slate-400">
-          {(['premium', 'mid', 'outer'] as const).map(cat => (
-            <span key={cat} className="flex items-center gap-1.5">
-              <span className="inline-block w-3 h-3 rounded-sm" style={{ background: CATEGORY_COLOR[cat] }} />
-              {CATEGORY_LABEL[cat]}
-            </span>
-          ))}
-          <span className="flex items-center gap-1.5 ml-auto">
-            연한 막대 = 2023년 최고점 &nbsp;|&nbsp; 진한 막대 = 현재
-          </span>
-        </div>
-        <DataSource label="추정치 — KB부동산 호가지수 + 공개 데이터 기반. 오차 범위 ±3%p" isReal={false} />
+        {(() => {
+          // Color per driver — shown as a dot on each Y-axis label
+          const DRIVER_COLOR: Record<string, string> = {
+            tx_recovery:       '#3b82f6',  // blue  — 거래가 회복 (buyers paid more)
+            listing_reduction: '#f59e0b',  // amber — 호가 인하 (sellers cut price)
+            mixed:             '#64748b',  // slate — 혼합
+          }
+          const DRIVER_LABEL: Record<string, string> = {
+            tx_recovery:       '거래가↑ (매수자가 더 냄)',
+            listing_reduction: '호가↓ (셀러가 낮춤)',
+            mixed:             '혼합',
+          }
+
+          // Custom Y-axis tick: colored dot + district name
+          const GapYTick = ({ x, y, payload }: { x: number; y: number; payload: { value: string } }) => {
+            const d = districtGapChart.find(item => item.gu === payload.value)
+            const color = d ? DRIVER_COLOR[d.driver] : '#64748b'
+            return (
+              <g transform={`translate(${x},${y})`}>
+                <circle cx={-74} cy={0} r={4} fill={color} />
+                <text x={-64} y={4} textAnchor="start" fill="#94a3b8" fontSize={11}>
+                  {payload.value}
+                </text>
+              </g>
+            )
+          }
+
+          return (
+            <>
+              <div className="overflow-x-auto">
+              <div style={{ minWidth: 320 }}>
+              <ResponsiveContainer width="100%" height={500}>
+                <BarChart data={districtGapChart} layout="vertical" margin={{ top: 5, right: 40, left: 5, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
+                  <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    tickFormatter={v => `${v}%`} domain={[0, 30]} />
+                  <YAxis type="category" dataKey="gu" tick={GapYTick} width={84} />
+                  <Tooltip
+                    contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
+                    formatter={(v: number, name: string) => [`${v.toFixed(1)}%`, name]}
+                    labelFormatter={(label: string) => {
+                      const d = districtGapChart.find(item => item.gu === label)
+                      return d
+                        ? `${label} — ${DRIVER_LABEL[d.driver]}`
+                        : label
+                    }}
+                  />
+                  <ReferenceLine x={2} stroke="#10b981" strokeDasharray="5 3"
+                    label={{ value: '정상 (2%)', fill: '#10b981', fontSize: 10, position: 'insideTopRight' }} />
+                  <Bar dataKey="peakGapPct" name="2023년 최고 갭" radius={[0, 3, 3, 0]}>
+                    {districtGapChart.map((d, i) => (
+                      <Cell key={`peak-${i}`} fill={`${CATEGORY_COLOR[d.category]}40`} />
+                    ))}
+                  </Bar>
+                  <Bar dataKey="currentGapPct" name="현재 갭 (2025 Q1)" radius={[0, 3, 3, 0]}>
+                    {districtGapChart.map((d, i) => (
+                      <Cell key={`curr-${i}`} fill={CATEGORY_COLOR[d.category]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              </div>
+              </div>
+
+              {/* Legend rows */}
+              <div className="mt-3 space-y-2">
+                <div className="flex flex-wrap gap-4 text-xs text-slate-400">
+                  {(['premium', 'mid', 'outer'] as const).map(cat => (
+                    <span key={cat} className="flex items-center gap-1.5">
+                      <span className="inline-block w-3 h-3 rounded-sm" style={{ background: CATEGORY_COLOR[cat] }} />
+                      {CATEGORY_LABEL[cat]}
+                    </span>
+                  ))}
+                  <span className="flex items-center gap-1.5 ml-auto">
+                    연한 막대 = 2023년 최고점 &nbsp;|&nbsp; 진한 막대 = 현재
+                  </span>
+                </div>
+                {/* Driver legend */}
+                <div className="flex flex-wrap gap-4 text-xs text-slate-500 border-t border-slate-700/50 pt-2">
+                  <span className="text-slate-400 font-medium mr-1">갭 축소 원인 (점):</span>
+                  {Object.entries(DRIVER_LABEL).map(([key, label]) => (
+                    <span key={key} className="flex items-center gap-1.5">
+                      <svg width="10" height="10"><circle cx="5" cy="5" r="4" fill={DRIVER_COLOR[key]} /></svg>
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <DataSource label="추정치 — KB부동산 호가지수 + 공개 데이터 기반. 오차 범위 ±3%p" isReal={false} />
+            </>
+          )
+        })()}
       </div>
 
       {/* Chart 5: Jeonse ratio — custom bar table */}
