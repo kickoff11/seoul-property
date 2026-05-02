@@ -370,7 +370,7 @@ export default function RealityPage() {
 
         <div className="overflow-x-auto">
         <div style={{ minWidth: 320 }}>
-        <ResponsiveContainer width="100%" height={340}>
+        <ResponsiveContainer width="100%" height={500}>
           <BarChart data={districtGapChart} layout="vertical" margin={{ top: 5, right: 40, left: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
             <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 10 }}
