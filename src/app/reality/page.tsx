@@ -12,8 +12,9 @@ import clsx from 'clsx'
 import { RealBadge, EstBadge, SectionHeader, DataSource } from '@/components/DataBadge'
 
 interface RealityData {
-  monthlyVolume:       { month: string; volume: number }[]
-  askTransactionGap:   AskTransactionGap[]
+  monthlyVolume:           { month: string; volume: number }[]
+  monthlyVolumeByDistrict: { gu: string; month: string; volume: number }[]
+  askTransactionGap:       AskTransactionGap[]
   priceIndexSeries:    { month: string; label: string; index: number }[]
   jeonseByGu:          { gu: string; jeonseIndex: number; saleIndex: number; jeonseRatio: number }[]
   districtAskGap:      DistrictAskGap[]
@@ -45,7 +46,8 @@ function fmtYm(ym: string): string {
 }
 
 export default function RealityPage() {
-  const [data, setData] = useState<RealityData | null>(null)
+  const [data, setData]           = useState<RealityData | null>(null)
+  const [volumeView, setVolumeView] = useState<'total' | 'district'>('total')
 
   useEffect(() => {
     fetch('/api/reality').then(r => r.json()).then(setData)
@@ -183,57 +185,164 @@ export default function RealityPage() {
         </div>
       </div>
 
-      {/* Chart 1: Volume with dual-cause explanation */}
+      {/* Chart 1: Volume — total or by district */}
       <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
-        <SectionHeader
-          title="월별 서울 아파트 매매 거래량"
-          badge={data.volumeIsReal ? <RealBadge source="국토교통부" /> : <EstBadge />}
-          sub="평년 기준선(6,500건) 대비 현재 거래량 수준"
-        />
-
-        {/* Dual-cause explainer */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-          <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3">
-            <p className="text-xs font-medium text-amber-500/70 mb-1">원인 1: 셀러 확신 (버티기)</p>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              특히 외곽 지역 셀러들은 2021년 고점 가격을 고수합니다.
-              &ldquo;언젠가는 다시 오른다&rdquo;는 확신으로 호가를 낮추지 않아 거래가 성사되지 않습니다.
-            </p>
-          </div>
-          <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3">
-            <p className="text-xs font-medium text-blue-500/70 mb-1">원인 2: 바이어 관망 (능동적 대기)</p>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              많은 잠재 매수자들이 &ldquo;지금은 아니다&rdquo;라고 스스로 판단해 시장에 들어오지 않습니다.
-              PIR 27배·월 상환 61% 부담이 실수요자 진입을 막고 있습니다.
-            </p>
+        <div className="flex items-start justify-between mb-3">
+          <SectionHeader
+            title="월별 서울 아파트 매매 거래량"
+            badge={data.volumeIsReal ? <RealBadge source="국토교통부" /> : <EstBadge />}
+            sub={volumeView === 'total' ? '평년 기준선(6,500건) 대비 현재 거래량 수준' : '구별 월간 거래량 — 색상 강도 = 거래 건수'}
+          />
+          <div className="flex gap-1 shrink-0 ml-4">
+            {(['total', 'district'] as const).map(v => (
+              <button key={v} onClick={() => setVolumeView(v)}
+                className={clsx(
+                  'px-3 py-1 text-xs rounded font-medium transition-colors',
+                  volumeView === v ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-400 hover:text-slate-200',
+                )}>
+                {v === 'total' ? '서울 전체' : '구별'}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <div style={{ minWidth: 360 }}>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={combinedChart} margin={{ top: 5, right: 10, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 9 }} interval="preserveStartEnd"
-                  angle={-45} textAnchor="end" height={44} />
-                <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}천`}
-                  label={{ value: '거래 건수', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10, dx: -8 }}
-                  width={52} />
-                <Tooltip
-                  contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
-                  formatter={(v: number) => [`${v.toLocaleString()}건`, '거래량']}
-                />
-                <ReferenceLine y={data.volumeHistoricalAvg} stroke="#f59e0b" strokeDasharray="5 3"
-                  label={{ value: '평년 평균 6,500건', fill: '#f59e0b', fontSize: 10, position: 'insideTopRight' }} />
-                <Bar dataKey="거래량" radius={[3, 3, 0, 0]}>
-                  {combinedChart.map((entry, i) => (
-                    <Cell key={i} fill={entry.거래량 < data.volumeHistoricalAvg ? '#ef4444' : '#3b82f6'} />
+        {volumeView === 'total' ? (
+          <>
+            {/* Dual-cause explainer */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3">
+                <p className="text-xs font-medium text-amber-500/70 mb-1">원인 1: 셀러 확신 (버티기)</p>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  특히 외곽 지역 셀러들은 2021년 고점 가격을 고수합니다.
+                  &ldquo;언젠가는 다시 오른다&rdquo;는 확신으로 호가를 낮추지 않아 거래가 성사되지 않습니다.
+                </p>
+              </div>
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3">
+                <p className="text-xs font-medium text-blue-500/70 mb-1">원인 2: 바이어 관망 (능동적 대기)</p>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  많은 잠재 매수자들이 &ldquo;지금은 아니다&rdquo;라고 스스로 판단해 시장에 들어오지 않습니다.
+                  PIR 27배·월 상환 61% 부담이 실수요자 진입을 막고 있습니다.
+                </p>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <div style={{ minWidth: 360 }}>
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={combinedChart} margin={{ top: 5, right: 10, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 9 }} interval="preserveStartEnd"
+                      angle={-45} textAnchor="end" height={44} />
+                    <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}천`}
+                      label={{ value: '거래 건수', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10, dx: -8 }}
+                      width={52} />
+                    <Tooltip
+                      contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
+                      formatter={(v: number) => [`${v.toLocaleString()}건`, '거래량']}
+                    />
+                    <ReferenceLine y={data.volumeHistoricalAvg} stroke="#f59e0b" strokeDasharray="5 3"
+                      label={{ value: '평년 평균 6,500건', fill: '#f59e0b', fontSize: 10, position: 'insideTopRight' }} />
+                    <Bar dataKey="거래량" radius={[3, 3, 0, 0]}>
+                      {combinedChart.map((entry, i) => (
+                        <Cell key={i} fill={entry.거래량 < data.volumeHistoricalAvg ? '#ef4444' : '#3b82f6'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </>
+        ) : (
+          /* District heatmap */
+          (() => {
+            const raw = data.monthlyVolumeByDistrict
+            if (!raw.length) return (
+              <p className="text-xs text-slate-500 py-8 text-center">데이터 로딩 중…</p>
+            )
+
+            // Build sorted month list and district list
+            const months = [...new Set(raw.map(r => r.month))].sort()
+            const volMap = new Map<string, number>()
+            const guTotals = new Map<string, number>()
+            for (const r of raw) {
+              volMap.set(`${r.gu}|${r.month}`, r.volume)
+              guTotals.set(r.gu, (guTotals.get(r.gu) ?? 0) + r.volume)
+            }
+            const districts = [...guTotals.entries()]
+              .sort((a, b) => b[1] - a[1])
+              .map(([gu]) => gu)
+
+            const maxVol = Math.max(...raw.map(r => r.volume))
+
+            function cellColor(vol: number): string {
+              if (!vol) return 'rgba(30,41,59,0.4)'  // empty — slate-800 faint
+              const t = vol / maxVol
+              // blue scale: low → high opacity
+              if (t < 0.15) return 'rgba(59,130,246,0.20)'
+              if (t < 0.35) return 'rgba(59,130,246,0.45)'
+              if (t < 0.60) return 'rgba(59,130,246,0.70)'
+              return 'rgba(59,130,246,0.95)'
+            }
+
+            // Show short month labels: '24-01' → '01 (only year on Jan)
+            function monthLabel(m: string): string {
+              const [y, mo] = m.split('-')
+              return mo === '01' ? `${y.slice(2)}'` : mo
+            }
+
+            return (
+              <div className="overflow-x-auto mt-1">
+                <div style={{ minWidth: Math.max(360, months.length * 34 + 60) }}>
+                  {/* Month header */}
+                  <div className="flex" style={{ marginLeft: 56 }}>
+                    {months.map(m => (
+                      <div key={m} style={{ width: 32, flexShrink: 0 }}
+                        className="text-center text-[9px] text-slate-500 pb-1 font-mono">
+                        {monthLabel(m)}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Rows */}
+                  {districts.map(gu => (
+                    <div key={gu} className="flex items-center mb-0.5">
+                      <div className="text-[10px] text-slate-400 text-right pr-2 shrink-0" style={{ width: 54 }}>
+                        {gu}
+                      </div>
+                      {months.map(m => {
+                        const vol = volMap.get(`${gu}|${m}`) ?? 0
+                        return (
+                          <div key={m} title={`${gu} ${m}: ${vol.toLocaleString()}건`}
+                            style={{ width: 30, height: 18, flexShrink: 0, background: cellColor(vol), marginRight: 2 }}
+                            className="rounded-sm flex items-center justify-center">
+                            {vol > 0 && (
+                              <span className="text-[8px] text-white/70 font-mono leading-none">
+                                {vol >= 1000 ? `${(vol / 1000).toFixed(1)}k` : vol}
+                              </span>
+                            )}
+                          </div>
+                        )
+                      })}
+                      <div className="text-[9px] text-slate-600 ml-2 shrink-0">
+                        {(guTotals.get(gu) ?? 0).toLocaleString()}
+                      </div>
+                    </div>
                   ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+                  {/* Color scale */}
+                  <div className="flex items-center gap-2 mt-3 ml-14">
+                    <span className="text-[9px] text-slate-500">거래량:</span>
+                    {[0.1, 0.3, 0.6, 1.0].map((t, i) => (
+                      <span key={i} className="flex items-center gap-1 text-[9px] text-slate-500">
+                        <span style={{ display:'inline-block', width:14, height:10,
+                          background: cellColor(Math.round(t * maxVol)), borderRadius: 2 }} />
+                        {i === 0 ? '낮음' : i === 3 ? '높음' : ''}
+                      </span>
+                    ))}
+                    <span className="text-[9px] text-slate-600 ml-2">숫자 = 건수 · 우측 = 누계</span>
+                  </div>
+                </div>
+              </div>
+            )
+          })()
+        )}
       </div>
 
       {/* Chart 2: R-ONE price index time series */}

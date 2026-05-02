@@ -4,7 +4,7 @@ import {
   FACT_CHECKS, SELLER_DENIAL, DISTRICT_ASK_GAP,
 } from '@/lib/market-reality'
 import { ensureSeeded } from '@/lib/seed'
-import { getMonthlyVolume } from '@/lib/db'
+import { getMonthlyVolume, getMonthlyVolumeByDistrict } from '@/lib/db'
 import { fetchSeoulPriceIndex, fetchSeoulJeonseIndex, fetchSeoulCityIndexSeries } from '@/lib/rone-api'
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -165,6 +165,9 @@ async function getRealPriceData(): Promise<{
 export async function GET() {
   ensureSeeded()
 
+  let volumeByDistrict: { gu: string; month: string; volume: number }[] = []
+  try { volumeByDistrict = getMonthlyVolumeByDistrict() } catch { /* empty DB */ }
+
   const [priceData, realVolume] = await Promise.all([
     getRealPriceData(),
     Promise.resolve(getRealVolume()),
@@ -176,6 +179,7 @@ export async function GET() {
   return NextResponse.json({
     // Real data from MOLIT DB
     monthlyVolume: realVolume,
+    monthlyVolumeByDistrict: volumeByDistrict,
     volumeHistoricalAvg: VOLUME_HISTORICAL_AVERAGE,
     volumePeak: VOLUME_PEAK,
     volumeIsReal: realVolume.length > 0,

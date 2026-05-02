@@ -195,6 +195,18 @@ export function getMonthlyVolume(): { month: string; volume: number }[] {
   }))
 }
 
+export function getMonthlyVolumeByDistrict(): { gu: string; month: string; volume: number }[] {
+  return getDb().prepare(`
+    SELECT
+      gu,
+      deal_year || '-' || printf('%02d', deal_month) AS month,
+      COUNT(*) AS volume
+    FROM transactions
+    GROUP BY gu, deal_year, deal_month
+    ORDER BY deal_year, deal_month, gu
+  `).all() as { gu: string; month: string; volume: number }[]
+}
+
 export function getMonthlyTrends(lawdCd?: string) {
   const having = lawdCd
     ? 'HAVING COUNT(*) >= 10'
