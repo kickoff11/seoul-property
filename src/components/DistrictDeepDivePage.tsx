@@ -338,7 +338,7 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
             <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
             <ReferenceLine x={POLICY_X} stroke="#f59e0b" strokeDasharray="4 2" strokeWidth={2}
               label={<RefLabel value={POLICY_LABEL} />} />
-            <Bar dataKey="15억미만" stackId="tier" fill="#3b82f6" />
+            <Bar dataKey="15억미만" stackId="tier" fill="#34d399" />
             <Bar dataKey="15–25억"  stackId="tier" fill="#f59e0b" />
             <Bar dataKey="25억초과" stackId="tier" fill="#f87171" radius={[2, 2, 0, 0]} />
           </BarChart>
