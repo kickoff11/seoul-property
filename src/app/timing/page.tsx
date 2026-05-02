@@ -114,7 +114,7 @@ export default function TimingPage() {
       )}>
         <div className="flex items-start gap-4">
           <div className="shrink-0 text-center">
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">종합 신호</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1">종합 신호</p>
             <p className={clsx('text-2xl font-bold', data.verdict.color)}>{data.verdict.label}</p>
             <div className="flex gap-1 mt-2 justify-center">
               {Array.from({ length: redCount }).map((_, i) => <span key={`r${i}`} className="w-2 h-2 rounded-full bg-rose-500" />)}

@@ -268,10 +268,15 @@ export async function GET() {
   const SUPPLY_2026 = 15900
   const LOCAL_PEAK_2022 = 94.06  // R-ONE district avg at Oct 2022 peak
 
-  // Fetch all live data in parallel
-  const [volumeData, currentRows, liveRates, medianPriceMW] = await Promise.all([
-    Promise.resolve((() => { try { return getMonthlyVolume() } catch { return [] } })()),
+  // Sync DB reads — no async needed
+  let volumeData: ReturnType<typeof getMonthlyVolume> = []
+  try { volumeData = getMonthlyVolume() } catch { /* ignore — empty DB on cold start */ }
 
+  let medianPriceMW: number | null = null
+  try { medianPriceMW = getMedianTransactionPrice(3) } catch { /* ignore */ }
+
+  // Fetch truly async data in parallel
+  const [currentRows, liveRates] = await Promise.all([
     // Latest available R-ONE price index (walk back up to 4 months)
     (async () => {
       const now = new Date()
@@ -286,9 +291,6 @@ export async function GET() {
 
     // Live BOK rates (null if BOK_API_KEY not set)
     fetchLatestRates(),
-
-    // Live median transaction price from MOLIT DB
-    Promise.resolve((() => { try { return getMedianTransactionPrice(3) } catch { return null } })()),
   ])
 
   // Price signal — R-ONE index vs 2022 peak

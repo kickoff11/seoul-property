@@ -11,7 +11,7 @@
  */
 
 import { fetchTransactionsFromApi } from './molit-api'
-import { isCached, saveTransactions, getTotalCount } from './db'
+import { getCachedDistricts, saveTransactions, getTotalCount } from './db'
 import { SEOUL_DISTRICTS } from './seoul-districts'
 
 const REFRESH_INTERVAL_MS = 60 * 60 * 1_000
@@ -49,15 +49,16 @@ async function seedMonths(months: number): Promise<void> {
   for (let m = 0; m < months; m++) {
     const d   = new Date(now.getFullYear(), now.getMonth() - m, 1)
     const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`
+    // One query to find all already-cached districts for this month
+    const cached = getCachedDistricts(ymd)
+    const toFetch = SEOUL_DISTRICTS.filter(d => !cached.has(d.code))
     await Promise.all(
-      SEOUL_DISTRICTS.map(async district => {
-        if (!isCached(district.code, ymd)) {
-          try {
-            const txs = await fetchTransactionsFromApi(district.code, ymd)
-            saveTransactions(txs, district.code, ymd)
-          } catch (err) {
-            console.warn(`[seed] skipping ${district.name} ${ymd}:`, (err as Error).message)
-          }
+      toFetch.map(async district => {
+        try {
+          const txs = await fetchTransactionsFromApi(district.code, ymd)
+          saveTransactions(txs, district.code, ymd)
+        } catch (err) {
+          console.warn(`[seed] skipping ${district.name} ${ymd}:`, (err as Error).message)
         }
       })
     )

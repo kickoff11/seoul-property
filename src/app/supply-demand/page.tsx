@@ -74,9 +74,10 @@ export default function SupplyDemandPage() {
   const guList = ['전체', ...Array.from(new Set(supply.majorProjects.map(p => p.gu))).sort()]
   const statusList = ['전체', '시공중', '분양중', '분양예정', '입주예정', '계획중', '입주완료']
 
-  let displayed = [...supply.majorProjects]
-  if (guFilter !== '전체')     displayed = displayed.filter(p => p.gu === guFilter)
-  if (statusFilter !== '전체') displayed = displayed.filter(p => p.status === statusFilter)
+  const displayed = supply.majorProjects.filter(p =>
+    (guFilter     === '전체' || p.gu     === guFilter) &&
+    (statusFilter === '전체' || p.status === statusFilter)
+  )
 
   const supplyChartData = supply.annualSupply.map(s => ({
     year: s.year,
@@ -138,16 +139,14 @@ export default function SupplyDemandPage() {
       </div>
 
       {/* Supply cliff alert */}
-      <div className="bg-rose-900/20 border border-rose-700/50 rounded-xl p-4 flex gap-3">
-        <span className="text-rose-400 text-lg mt-0.5 shrink-0">⚠</span>
-        <div>
-          <p className="text-rose-300 font-semibold text-sm">2025–2026 공급 절벽 — 무주택자에게 양날의 칼</p>
-          <p className="text-rose-400/75 text-xs mt-1 leading-relaxed">
-            2025년 {supply2025.toLocaleString()}세대, 2026년 {supply2026.toLocaleString()}세대 입주 예정 — 수요 추정치(3.7만)의 절반 이하.
-            공급 부족은 <strong className="text-rose-300">가격 하방을 막는 지지대</strong>가 되지만, 동시에 <strong className="text-rose-300">지금 사면 역대 최고가</strong>라는 딜레마.
-            기다리면 공급이 더 줄어드는 2026년 상반기에 가격 상방 압력이 커질 수 있습니다.
-          </p>
-        </div>
+      <div className="bg-rose-950/10 border border-rose-800/25 rounded-xl p-4">
+        <p className="text-[10px] font-medium text-rose-500/70 uppercase tracking-wide mb-1">공급 절벽 — 시장 배경</p>
+        <p className="text-sm font-medium text-slate-300">2025–2026 공급 절벽 — 무주택자에게 양날의 칼</p>
+        <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+          2025년 {supply2025.toLocaleString()}세대, 2026년 {supply2026.toLocaleString()}세대 입주 예정 — 수요 추정치(3.7만)의 절반 이하.
+          공급 부족은 가격 하방을 막는 지지대가 되지만, 동시에 지금 사면 역대 최고가라는 딜레마.
+          기다리면 공급이 더 줄어드는 2026년 상반기에 가격 상방 압력이 커질 수 있습니다.
+        </p>
       </div>
 
       {/* 10-year listings vs transactions */}

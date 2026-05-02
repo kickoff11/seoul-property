@@ -100,24 +100,24 @@ export default function RealityPage() {
       {/* Main thesis — balanced dual perspective */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Bull read */}
-        <div className="bg-rose-950/20 border border-rose-700/40 rounded-xl p-4">
-          <p className="text-rose-300 text-xs font-bold uppercase tracking-widest mb-2">상승론 시각</p>
-          <p className="text-sm text-slate-200 font-semibold mb-2">
-            가격이 안 떨어진 게 아니라 — <span className="text-rose-300">가격이 오르고 있다</span>
+        <div className="bg-rose-950/10 border border-rose-800/25 rounded-xl p-4">
+          <p className="text-rose-400/70 text-xs font-medium uppercase tracking-wide mb-2">상승론 시각</p>
+          <p className="text-sm text-slate-300 font-medium mb-2">
+            가격이 안 떨어진 게 아니라 — <span className="text-rose-400">가격이 오르고 있다</span>
           </p>
           <p className="text-xs text-slate-400 leading-relaxed">
-            부동산원 가격지수는 현재 <strong className="text-rose-300">역대 최고치</strong>입니다.
-            거래량 감소는 &ldquo;살 사람이 없어서&rdquo;가 아니라 <strong className="text-slate-200">살 사람이 없어도
+            부동산원 가격지수는 현재 <strong className="text-rose-400">역대 최고치</strong>입니다.
+            거래량 감소는 &ldquo;살 사람이 없어서&rdquo;가 아니라 <strong className="text-slate-300">살 사람이 없어도
             팔 필요가 없는 사람들</strong>이 버티고 있기 때문입니다.
             강남은 현금 자산가 수요가 가격을 지지 — 금리·규제에 비탄력적입니다.
             2025-2026 공급 절벽이 현실화되면 전세난 → 매매 전환 수요로 가격 상승이 가속될 수 있습니다.
           </p>
         </div>
         {/* Bear read */}
-        <div className="bg-emerald-950/20 border border-emerald-700/40 rounded-xl p-4">
-          <p className="text-emerald-300 text-xs font-bold uppercase tracking-widest mb-2">하락론 시각</p>
-          <p className="text-sm text-slate-200 font-semibold mb-2">
-            거래 없는 가격은 <span className="text-emerald-300">신기루다</span>
+        <div className="bg-emerald-950/10 border border-emerald-800/25 rounded-xl p-4">
+          <p className="text-emerald-500/70 text-xs font-medium uppercase tracking-wide mb-2">하락론 시각</p>
+          <p className="text-sm text-slate-300 font-medium mb-2">
+            거래 없는 가격은 <span className="text-emerald-500">신기루다</span>
           </p>
           <p className="text-xs text-slate-400 leading-relaxed">
             호가-실거래 갭 <strong className="text-amber-400">10.5%</strong>는 셀러가 부르는 가격과
@@ -193,15 +193,15 @@ export default function RealityPage() {
 
         {/* Dual-cause explainer */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-          <div className="bg-amber-950/20 border border-amber-700/30 rounded-lg p-3">
-            <p className="text-xs font-semibold text-amber-300 mb-1">원인 1: 셀러 확신 (버티기)</p>
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3">
+            <p className="text-xs font-medium text-amber-500/70 mb-1">원인 1: 셀러 확신 (버티기)</p>
             <p className="text-xs text-slate-400 leading-relaxed">
               특히 외곽 지역 셀러들은 2021년 고점 가격을 고수합니다.
               &ldquo;언젠가는 다시 오른다&rdquo;는 확신으로 호가를 낮추지 않아 거래가 성사되지 않습니다.
             </p>
           </div>
-          <div className="bg-blue-950/20 border border-blue-700/30 rounded-lg p-3">
-            <p className="text-xs font-semibold text-blue-300 mb-1">원인 2: 바이어 관망 (능동적 대기)</p>
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3">
+            <p className="text-xs font-medium text-blue-500/70 mb-1">원인 2: 바이어 관망 (능동적 대기)</p>
             <p className="text-xs text-slate-400 leading-relaxed">
               많은 잠재 매수자들이 &ldquo;지금은 아니다&rdquo;라고 스스로 판단해 시장에 들어오지 않습니다.
               PIR 27배·월 상환 61% 부담이 실수요자 진입을 막고 있습니다.
@@ -252,13 +252,13 @@ export default function RealityPage() {
             }
           />
 
-          <div className="mb-4 bg-rose-950/20 border border-rose-700/30 rounded-lg px-4 py-3">
-            <p className="text-xs font-semibold text-rose-300 mb-1">
+          <div className="mb-4 bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-3">
+            <p className="text-xs font-medium text-slate-400 mb-1">
               핵심: 가격은 내리지 않았다 — 거래량이 줄었을 뿐
             </p>
             <p className="text-xs text-slate-400 leading-relaxed">
-              2022년 고점 대비 최대 조정폭은 <strong className="text-amber-300">{troughCorrection?.toFixed(1) ?? '—'}%</strong>에 불과했습니다.
-              그 후 회복해 현재는 <strong className="text-rose-300">역대 최고치</strong>입니다.
+              2022년 고점 대비 최대 조정폭은 <strong className="text-amber-400">{troughCorrection?.toFixed(1) ?? '—'}%</strong>에 불과했습니다.
+              그 후 회복해 현재는 <strong className="text-rose-400">역대 최고치</strong>입니다.
               &ldquo;폭락&rdquo;은 없었고, 거래량만 평년 대비 -{Math.abs(volumeVsAvg ?? 23).toFixed(0)}% 감소한 상태입니다.
               이를 &ldquo;위기&rdquo;로 볼 것인지 &ldquo;공급 부족 속 가격 유지&rdquo;로 볼 것인지는
               해석의 차이입니다.
@@ -341,8 +341,8 @@ export default function RealityPage() {
 
         {/* Key insight — reframed */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-          <div className="bg-indigo-950/20 border border-indigo-700/30 rounded-lg p-3">
-            <p className="text-xs font-semibold text-indigo-300 mb-1">강남권 — 확신 프리미엄</p>
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3">
+            <p className="text-xs font-medium text-indigo-400/70 mb-1">강남권 — 확신 프리미엄</p>
             <p className="text-xs text-slate-400 leading-relaxed">
               강남·서초·송파 갭(7-8%)은 &ldquo;셀러 부정&rdquo;이 아닌
               <strong className="text-slate-300"> 시장이 합의한 프리미엄</strong>입니다.
@@ -350,16 +350,16 @@ export default function RealityPage() {
               현금 매수 비중이 높아 금리·규제에 비탄력적입니다.
             </p>
           </div>
-          <div className="bg-amber-950/20 border border-amber-700/30 rounded-lg p-3">
-            <p className="text-xs font-semibold text-amber-300 mb-1">중간지역 — 혼합</p>
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3">
+            <p className="text-xs font-medium text-amber-500/70 mb-1">중간지역 — 혼합</p>
             <p className="text-xs text-slate-400 leading-relaxed">
               마포·성동·동작 등은 실수요와 갭투자가 혼재합니다.
               금리·정책 변화에 더 민감하게 반응하며,
               단지별 편차가 큰 구간입니다.
             </p>
           </div>
-          <div className="bg-rose-950/20 border border-rose-700/30 rounded-lg p-3">
-            <p className="text-xs font-semibold text-rose-300 mb-1">외곽지역 — 셀러 버티기</p>
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3">
+            <p className="text-xs font-medium text-rose-500/70 mb-1">외곽지역 — 셀러 버티기</p>
             <p className="text-xs text-slate-400 leading-relaxed">
               도봉·강북·노원 갭(17-18%)은 실수요 기반이 약한 상태에서
               2021년 고점 가격을 고수하는 셀러들의 <strong className="text-slate-300">버티기</strong>입니다.
@@ -371,11 +371,11 @@ export default function RealityPage() {
         <div className="overflow-x-auto">
         <div style={{ minWidth: 320 }}>
         <ResponsiveContainer width="100%" height={340}>
-          <BarChart data={districtGapChart} layout="vertical" margin={{ top: 5, right: 40, left: 52, bottom: 5 }}>
+          <BarChart data={districtGapChart} layout="vertical" margin={{ top: 5, right: 40, left: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
             <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 10 }}
               tickFormatter={v => `${v}%`} domain={[0, 30]} />
-            <YAxis type="category" dataKey="gu" tick={{ fill: '#94a3b8', fontSize: 11 }} width={55} />
+            <YAxis type="category" dataKey="gu" tick={{ fill: '#94a3b8', fontSize: 11 }} width={72} />
             <Tooltip
               contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
               formatter={(v: number, name: string) => [`${(v as number).toFixed(1)}%`, name]}

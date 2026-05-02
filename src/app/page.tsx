@@ -131,40 +131,40 @@ export default function Dashboard() {
       </div>
 
       {/* Listings vs transactions callout */}
-      <div className="bg-amber-900/15 border border-amber-700/40 rounded-xl p-4">
+      <div className="bg-amber-950/10 border border-amber-800/25 rounded-xl p-4">
         <div className="flex flex-col sm:flex-row sm:items-start gap-3">
           <div className="shrink-0">
-            <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-widest">매물 vs 거래 (2026년 4월)</p>
+            <p className="text-[10px] font-medium text-amber-500/70 uppercase tracking-wide">매물 vs 거래 (2026년 4월)</p>
             <div className="flex items-end gap-3 mt-1">
               <div>
-                <p className="text-2xl font-bold text-amber-300">74,600<span className="text-sm font-normal ml-0.5">건</span></p>
+                <p className="text-2xl font-bold text-amber-400">74,600<span className="text-sm font-normal ml-0.5">건</span></p>
                 <p className="text-[10px] text-slate-500">활성 매물</p>
               </div>
               <p className="text-slate-600 text-lg mb-4">vs</p>
               <div>
-                <p className="text-2xl font-bold text-blue-300">8,550<span className="text-sm font-normal ml-0.5">건</span></p>
+                <p className="text-2xl font-bold text-blue-400">8,550<span className="text-sm font-normal ml-0.5">건</span></p>
                 <p className="text-[10px] text-slate-500">월 거래량</p>
               </div>
             </div>
           </div>
-          <div className="h-px sm:h-16 sm:w-px bg-amber-800/50 shrink-0" />
+          <div className="h-px sm:h-16 sm:w-px bg-amber-800/30 shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-slate-200">10년 추이: 거래는 줄고 매물은 쌓였다</p>
+            <p className="text-sm font-medium text-slate-300">10년 추이: 거래는 줄고 매물은 쌓였다</p>
             <div className="grid grid-cols-4 gap-1.5 mt-2">
               {[
-                { year: '2020', tx: '9.4만', color: 'text-blue-300' },
+                { year: '2020', tx: '9.4만', color: 'text-blue-400' },
                 { year: '2022', tx: '1.5만', color: 'text-rose-400' },
-                { year: '2023', tx: '3.6만', color: 'text-amber-300' },
-                { year: '2025', tx: '~8만', color: 'text-emerald-300' },
+                { year: '2023', tx: '3.6만', color: 'text-amber-400' },
+                { year: '2025', tx: '~8만', color: 'text-emerald-500' },
               ].map(d => (
                 <div key={d.year} className="bg-slate-900/50 rounded p-1.5 text-center">
                   <p className="text-[10px] text-slate-500">{d.year}</p>
-                  <p className={`text-sm font-bold ${d.color}`}>{d.tx}</p>
+                  <p className={`text-sm font-semibold ${d.color}`}>{d.tx}</p>
                   <p className="text-[9px] text-slate-600">연간</p>
                 </div>
               ))}
             </div>
-            <p className="text-[10px] text-amber-700 mt-2">◐ 국토교통부 실거래 · 서울경제 보도 기반</p>
+            <p className="text-[10px] text-slate-600 mt-2">국토교통부 실거래 · 서울경제 보도 기반</p>
           </div>
           <Link href="/supply-demand" className="sm:ml-auto text-xs text-amber-400 hover:text-amber-300 underline shrink-0 self-start">
             10년 차트 →
@@ -210,11 +210,11 @@ export default function Dashboard() {
       {/* Supply / Demand snapshot */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Supply cliff */}
-        <div className="bg-rose-900/15 border border-rose-700/40 rounded-xl p-4">
+        <div className="bg-rose-950/10 border border-rose-800/25 rounded-xl p-4">
           <div className="flex items-start justify-between mb-3">
             <div>
-              <p className="text-xs font-semibold text-rose-300 uppercase tracking-wide">공급 전망</p>
-              <p className="text-slate-200 font-bold mt-0.5">2025–2026 공급 절벽</p>
+              <p className="text-xs font-medium text-rose-500/70 uppercase tracking-wide">공급 전망</p>
+              <p className="text-slate-300 font-semibold mt-0.5">2025–2026 공급 절벽</p>
               <DataSource label="부동산R114 추정" isReal={false} />
             </div>
             <Link href="/supply-demand" className="text-xs text-rose-400 hover:text-rose-300 underline shrink-0">자세히 →</Link>
@@ -235,15 +235,15 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
-          <p className="text-xs text-rose-400/70 mt-2">수요 기준선 3.7만 세대 대비 절반 수준</p>
+          <p className="text-xs text-slate-500 mt-2">수요 기준선 3.7만 세대 대비 절반 수준</p>
         </div>
 
         {/* Demand signals */}
-        <div className="bg-blue-900/15 border border-blue-700/40 rounded-xl p-4">
+        <div className="bg-blue-950/10 border border-blue-800/25 rounded-xl p-4">
           <div className="flex items-start justify-between mb-3">
             <div>
-              <p className="text-xs font-semibold text-blue-300 uppercase tracking-wide">수요 시그널</p>
-              <p className="text-slate-200 font-bold mt-0.5">심리 회복 중, 금리 하락 중</p>
+              <p className="text-xs font-medium text-blue-500/70 uppercase tracking-wide">수요 시그널</p>
+              <p className="text-slate-300 font-semibold mt-0.5">심리 회복 중, 금리 하락 중</p>
               <DataSource label="KB부동산·한국은행 추정" isReal={false} />
             </div>
             <Link href="/supply-demand" className="text-xs text-blue-400 hover:text-blue-300 underline shrink-0">자세히 →</Link>

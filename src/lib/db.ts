@@ -196,14 +196,35 @@ export function getMonthlyVolume(): { month: string; volume: number }[] {
 }
 
 export function getMonthlyTrends(lawdCd?: string) {
-  const where = lawdCd ? `WHERE lawd_cd = '${lawdCd.replace(/'/g, '')}'` : ''
-  // For Seoul-wide trends, only include months where at least 20 of 25 districts
-  // are represented — this filters out partially-seeded months far more reliably
-  // than a raw transaction count.
-  // For district-specific, require at least 10 transactions.
   const having = lawdCd
     ? 'HAVING COUNT(*) >= 10'
     : 'HAVING COUNT(DISTINCT lawd_cd) >= 20'
+
+  if (lawdCd) {
+    return getDb().prepare(`
+      SELECT * FROM (
+        SELECT
+          deal_year  AS dealYear,
+          deal_month AS dealMonth,
+          COUNT(*)                AS count,
+          COUNT(DISTINCT lawd_cd) AS districtCount,
+          AVG(amount)             AS avgAmount,
+          AVG(price_per_m2)       AS avgPricePerM2,
+          MIN(amount)             AS minAmount,
+          MAX(amount)             AS maxAmount
+        FROM transactions
+        WHERE lawd_cd = ?
+        GROUP BY deal_year, deal_month
+        ${having}
+        ORDER BY deal_year DESC, deal_month DESC
+        LIMIT 24
+      ) ORDER BY dealYear ASC, dealMonth ASC
+    `).all(lawdCd) as {
+      dealYear: number; dealMonth: number; count: number; districtCount: number
+      avgAmount: number; avgPricePerM2: number; minAmount: number; maxAmount: number
+    }[]
+  }
+
   return getDb().prepare(`
     SELECT * FROM (
       SELECT
@@ -215,7 +236,7 @@ export function getMonthlyTrends(lawdCd?: string) {
         AVG(price_per_m2)       AS avgPricePerM2,
         MIN(amount)             AS minAmount,
         MAX(amount)             AS maxAmount
-      FROM transactions ${where}
+      FROM transactions
       GROUP BY deal_year, deal_month
       ${having}
       ORDER BY deal_year DESC, deal_month DESC
@@ -223,8 +244,7 @@ export function getMonthlyTrends(lawdCd?: string) {
     ) ORDER BY dealYear ASC, dealMonth ASC
   `).all() as {
     dealYear: number; dealMonth: number; count: number; districtCount: number
-    avgAmount: number; avgPricePerM2: number
-    minAmount: number; maxAmount: number
+    avgAmount: number; avgPricePerM2: number; minAmount: number; maxAmount: number
   }[]
 }
 
@@ -252,38 +272,13 @@ export function getMedianTransactionPrice(recentMonths = 3): number | null {
     : Math.round((rows[mid - 1].amount + rows[mid].amount) / 2)
 }
 
-/**
- * Monthly median transaction prices for the charted time range.
- * Returns { month: 'YYYY-MM', medianPrice: number (만원) }[]
- */
-export function getMonthlyMedianPrices(): { month: string; medianPrice: number }[] {
-  const rows = getDb().prepare(`
-    SELECT deal_year, deal_month,
-           COUNT(*) AS cnt,
-           amount
-    FROM transactions
-    ORDER BY deal_year, deal_month, amount
-  `).all() as { deal_year: number; deal_month: number; cnt: number; amount: number }[]
-
-  // Group into month buckets
-  const byMonth = new Map<string, number[]>()
-  for (const r of rows) {
-    const key = `${r.deal_year}-${String(r.deal_month).padStart(2, '0')}`
-    if (!byMonth.has(key)) byMonth.set(key, [])
-    byMonth.get(key)!.push(r.amount)
-  }
-
-  return Array.from(byMonth.entries())
-    .filter(([, prices]) => prices.length >= 5)
-    .map(([month, prices]) => {
-      prices.sort((a, b) => a - b)
-      const mid = Math.floor(prices.length / 2)
-      const median = prices.length % 2 === 1
-        ? prices[mid]
-        : Math.round((prices[mid - 1] + prices[mid]) / 2)
-      return { month, medianPrice: median }
-    })
-    .sort((a, b) => a.month.localeCompare(b.month))
+/** Returns the set of lawd_cd codes already cached for a given month. */
+export function getCachedDistricts(dealYmd: string): Set<string> {
+  const rows = getDb()
+    .prepare(`SELECT lawd_cd FROM fetch_log WHERE deal_ymd = ?
+              AND fetched_at > datetime('now', '-24 hours')`)
+    .all(dealYmd) as { lawd_cd: string }[]
+  return new Set(rows.map(r => r.lawd_cd))
 }
 
 export function getInactiveComplexes(monthsThreshold = 18) {
