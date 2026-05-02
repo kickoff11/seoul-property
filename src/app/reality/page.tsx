@@ -9,7 +9,7 @@ import {
 } from 'recharts'
 import { AskTransactionGap, DistrictAskGap } from '@/lib/market-reality'
 import clsx from 'clsx'
-import { RealBadge, EstBadge, SectionHeader, DataSource } from '@/components/DataBadge'
+import { RealBadge, EstBadge, SectionHeader, DataSource, MockBadge, RefreshingBadge } from '@/components/DataBadge'
 
 interface RealityData {
   monthlyVolume:           { month: string; volume: number }[]
@@ -28,6 +28,8 @@ interface RealityData {
   troughIndex:         number | null
   currentIndex:        number | null
   changeFromPeak:      number | null
+  isMockVolume:        boolean
+  isBackfilling:       boolean
 }
 
 const CATEGORY_COLOR: Record<string, string> = {
@@ -56,6 +58,18 @@ export default function RealityPage() {
       .then(setData)
       .catch(err => { console.error('[reality] failed to load:', err); setLoadError(true) })
   }, [])
+
+  // Re-fetch while history backfill is running so the volume chart updates
+  useEffect(() => {
+    if (!data?.isBackfilling) return
+    const id = setInterval(() => {
+      fetch('/api/reality')
+        .then(r => r.json())
+        .then(setData)
+        .catch(() => {})
+    }, 45_000)
+    return () => clearInterval(id)
+  }, [data?.isBackfilling])
 
   if (loadError) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 text-slate-400">
@@ -204,10 +218,23 @@ export default function RealityPage() {
         <div className="flex items-start justify-between mb-3">
           <SectionHeader
             title="월별 서울 아파트 매매 거래량"
-            badge={data.volumeIsReal ? <RealBadge source="국토교통부" /> : <EstBadge />}
-            sub={volumeView === 'total' ? '평년 기준선(6,500건) 대비 현재 거래량 수준' : '구별 월간 거래량 — 색상 강도 = 거래 건수'}
+            badge={
+              data.isMockVolume
+                ? <MockBadge detail="생성된 모의 거래 데이터 — 월별 패턴이 실제와 다릅니다. API 할당량 초기화 후 자동 갱신됩니다." />
+                : data.volumeIsReal
+                  ? <RealBadge source="국토교통부" />
+                  : <EstBadge />
+            }
+            sub={
+              data.isMockVolume
+                ? '모의 데이터 표시 중 — 실제 거래 패턴과 다름'
+                : volumeView === 'total'
+                  ? '평년 기준선(6,500건) 대비 현재 거래량 수준'
+                  : '구별 월간 거래량 — 색상 강도 = 거래 건수'
+            }
           />
-          <div className="flex gap-1 shrink-0 ml-4">
+          <div className="flex items-center gap-2 shrink-0 ml-4">
+            {data.isBackfilling && <RefreshingBadge />}
             {(['total', 'district'] as const).map(v => (
               <button key={v} onClick={() => setVolumeView(v)}
                 className={clsx(

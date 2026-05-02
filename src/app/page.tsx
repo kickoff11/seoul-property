@@ -10,7 +10,7 @@ import VacancyAlert from '@/components/VacancyAlert'
 import { DistrictSummary, ApartmentTransaction, PriceTrend, VacantComplex, SupplyByYear, SentimentPoint, InterestRatePoint } from '@/types'
 import { fmt, fmtPricePerM2 } from '@/lib/analysis'
 import Link from 'next/link'
-import { RealBadge, EstBadge, DataSource } from '@/components/DataBadge'
+import { RealBadge, EstBadge, DataSource, MockBadge, RefreshingBadge } from '@/components/DataBadge'
 
 const SeoulMap = dynamic(() => import('@/components/SeoulMap'), { ssr: false })
 
@@ -22,6 +22,8 @@ interface DashboardData {
   supply:       SupplyByYear[]
   sentiment:    SentimentPoint | null
   interestRate: InterestRatePoint | null
+  isMock:       boolean
+  backfilling:  boolean
 }
 
 export default function Dashboard() {
@@ -56,10 +58,20 @@ export default function Dashboard() {
       supply:       sup.annualSupply,
       sentiment:    dem.sentiment?.[dem.sentiment.length - 1] ?? null,
       interestRate: dem.interestRates?.[dem.interestRates.length - 1] ?? null,
+      isMock:       !!d.isMock,
+      backfilling:  !!d.backfilling,
     })
   }, [])
 
   useEffect(() => { load() }, [load])
+
+  // Re-poll every 45s while history backfill is running so charts update
+  // automatically when historical data fills in.
+  useEffect(() => {
+    if (!data?.backfilling) return
+    const id = setInterval(load, 45_000)
+    return () => clearInterval(id)
+  }, [data?.backfilling, load])
 
   const handleDistrictClick = useCallback(async (lawdCd: string) => {
     const d = data?.districts.find(x => x.lawdCd === lawdCd)
@@ -99,8 +111,11 @@ export default function Dashboard() {
           국토교통부 실거래가 공개시스템 기반 · 호가 대비 실제 거래가를 한눈에 확인하세요
         </p>
         <div className="flex flex-wrap gap-2 mt-1">
-          <RealBadge source="거래 데이터 — 국토교통부 실거래가" />
+          {data.isMock
+            ? <MockBadge detail="국토교통부 API 할당량 소진 — 거래 건수·가격·지역 분포가 실제와 다릅니다" />
+            : <RealBadge source="거래 데이터 — 국토교통부 실거래가" />}
           <EstBadge note="공급 전망 · 수요 심리 — 공개보고서 기반" />
+          {data.backfilling && <RefreshingBadge />}
         </div>
       </div>
 
@@ -199,6 +214,8 @@ export default function Dashboard() {
         <PriceTrendChart
           data={districtTrends.length ? districtTrends : data.trends}
           title={`${selectedGu ?? '서울 전체'} 월별 거래 추이`}
+          isMock={data.isMock}
+          backfilling={data.backfilling}
         />
         <DistrictRanking data={data.districts} />
       </div>

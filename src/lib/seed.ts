@@ -61,9 +61,10 @@ export function ensureSeeded(): void {
 }
 
 /** True only while the fast seed is running — drives the dashboard spinner */
-export function isSeeding(): boolean {
-  return activeSeed !== null
-}
+export function isSeeding(): boolean { return activeSeed !== null }
+
+/** True while the silent history backfill is filling in months 12-120 */
+export function isHistoryBackfilling(): boolean { return historyRunning }
 
 // ── Core seeding ──────────────────────────────────────────────
 

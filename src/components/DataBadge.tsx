@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * Per-section data provenance badges.
  *
@@ -70,6 +72,37 @@ export function SectionHeader({ title, badge, sub, className = '' }: SectionHead
       </div>
       {sub && <p className="text-xs text-slate-500 mt-1">{sub}</p>}
     </div>
+  )
+}
+
+/**
+ * MockBadge — shown per-section when the real API fell back to generated data
+ * (e.g. MOLIT quota exhausted). Always includes a tooltip explaining what the
+ * mock is, so users know the pattern is generated, not real.
+ */
+interface MockProps { detail?: string }
+export function MockBadge({ detail }: MockProps) {
+  return (
+    <span
+      title={detail ?? '국토교통부 API 할당량 소진 — 생성된 모의 거래 데이터 사용 중. 실제 거래 패턴과 다를 수 있습니다.'}
+      className="inline-flex items-center gap-1 text-[11px] leading-none bg-orange-950 text-orange-400 border border-orange-800 px-1.5 py-0.5 rounded font-medium cursor-default select-none"
+    >
+      <span className="text-orange-500 text-[8px]">◈</span>모의 데이터
+    </span>
+  )
+}
+
+/**
+ * RefreshingBadge — shown while the silent history backfill is still running
+ * (months 12-120). Pulses to indicate live background loading.
+ */
+export function RefreshingBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[11px] leading-none bg-sky-950 text-sky-400 border border-sky-800 px-1.5 py-0.5 rounded font-medium select-none"
+      title="과거 데이터를 백그라운드에서 불러오는 중 — 새로고침하면 더 많은 기록이 표시됩니다">
+      <span className="inline-block w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse shrink-0" />
+      히스토리 로딩 중…
+    </span>
   )
 }
 
