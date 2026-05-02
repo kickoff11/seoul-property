@@ -9,7 +9,7 @@ import {
 } from 'recharts'
 import { AskTransactionGap, DistrictAskGap } from '@/lib/market-reality'
 import clsx from 'clsx'
-import { RealBadge, EstBadge, SectionHeader, DataSource, MockBadge, RefreshingBadge } from '@/components/DataBadge'
+import { RealBadge, EstBadge, SectionHeader, DataSource, MockBadge, RefreshingBadge, QuotaRefreshAlert } from '@/components/DataBadge'
 
 interface RealityData {
   monthlyVolume:           { month: string; volume: number }[]
@@ -241,6 +241,8 @@ export default function RealityPage() {
             ))}
           </div>
         </div>
+
+        {data.isMockVolume && <QuotaRefreshAlert />}
 
         {volumeView === 'total' ? (
           <>

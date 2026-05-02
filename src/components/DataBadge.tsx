@@ -1,5 +1,7 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+
 /**
  * Per-section data provenance badges.
  *
@@ -116,5 +118,50 @@ export function DataSource({ label, isReal = true }: DataSourceProps) {
     <p className={`text-[10px] mt-1.5 ${isReal ? 'text-emerald-700' : 'text-amber-700'}`}>
       {isReal ? '● ' : '◐ '}{label}
     </p>
+  )
+}
+
+/**
+ * QuotaRefreshAlert — shown alongside mock-data charts.
+ * Calculates and counts down to the next MOLIT API quota reset (midnight KST = 15:00 UTC).
+ */
+export function QuotaRefreshAlert() {
+  const [timeUntil, setTimeUntil] = useState('')
+  const [resetTime, setResetTime] = useState('')
+
+  useEffect(() => {
+    function compute() {
+      const now = new Date()
+      // MOLIT daily quota resets at midnight KST (UTC+9) = 15:00 UTC
+      const next = new Date(now)
+      next.setUTCHours(15, 0, 0, 0)
+      if (next <= now) next.setUTCDate(next.getUTCDate() + 1)
+
+      const diff = next.getTime() - now.getTime()
+      const h = Math.floor(diff / 3_600_000)
+      const m = Math.floor((diff % 3_600_000) / 60_000)
+
+      setTimeUntil(h > 0 ? `${h}시간 ${m}분` : `${m}분`)
+
+      // Format as local time
+      setResetTime(next.toLocaleTimeString('ko-KR', {
+        hour: '2-digit', minute: '2-digit', hour12: false,
+        timeZone: 'Asia/Seoul',
+      }) + ' KST')
+    }
+    compute()
+    const id = setInterval(compute, 60_000)
+    return () => clearInterval(id)
+  }, [])
+
+  return (
+    <div className="mt-3 flex items-start gap-2 text-xs bg-amber-950/30 border border-amber-800/30 rounded-lg px-3 py-2.5">
+      <span className="shrink-0 text-amber-500 mt-0.5">⏱</span>
+      <span className="text-amber-400/90 leading-relaxed">
+        국토교통부 API 일일 할당량 소진으로 모의 데이터 표시 중.{' '}
+        실제 데이터는 <strong className="text-amber-300">자정 KST ({resetTime})</strong>
+        {timeUntil && <> — 약 <strong className="text-amber-300">{timeUntil} 후</strong></>} 자동 갱신됩니다.
+      </span>
+    </div>
   )
 }
