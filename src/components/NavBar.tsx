@@ -11,6 +11,7 @@ const links = [
   { href: '/reality',       label: '시장 현실' },
   { href: '/supply-demand', label: '공급·수요' },
   { href: '/policy',        label: '정책 분석' },
+  { href: '/gangnam',       label: '강남 분석' },
 ]
 
 export default function NavBar() {
