@@ -47,11 +47,25 @@ function fmtYm(ym: string): string {
 
 export default function RealityPage() {
   const [data, setData]           = useState<RealityData | null>(null)
+  const [loadError, setLoadError] = useState(false)
   const [volumeView, setVolumeView] = useState<'total' | 'district'>('total')
 
   useEffect(() => {
-    fetch('/api/reality').then(r => r.json()).then(setData)
+    fetch('/api/reality')
+      .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json() })
+      .then(setData)
+      .catch(err => { console.error('[reality] failed to load:', err); setLoadError(true) })
   }, [])
+
+  if (loadError) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 text-slate-400">
+      <p className="text-sm">데이터를 불러오지 못했습니다.</p>
+      <button onClick={() => { setLoadError(false); window.location.reload() }}
+        className="text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded">
+        다시 시도
+      </button>
+    </div>
+  )
 
   if (!data) return (
     <div className="flex items-center justify-center min-h-[60vh]">

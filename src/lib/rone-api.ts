@@ -41,8 +41,11 @@ async function fetchRoneTable(
   url.searchParams.set('pIndex',           '1')
   url.searchParams.set('pSize',            String(pageSize))
 
-  const res = await fetch(url.toString(), { next: { revalidate: 3600 } })
-  if (!res.ok) return []
+  const res = await fetch(url.toString(), {
+    next: { revalidate: 3600 },
+    signal: AbortSignal.timeout(10_000),
+  }).catch(() => null)
+  if (!res || !res.ok) return []
 
   const data = await res.json()
   const tables = data?.SttsApiTblData

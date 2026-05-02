@@ -40,9 +40,8 @@ export default function Dashboard() {
       fetch('/api/demand').then(r => r.json()),
     ])
 
-    // Wait until seeding finishes — seeding now has 10s timeout per call so it
-    // always terminates. Show nothing until we have clean, complete-month data.
-    if (d.seeding || d.data?.length === 0) {
+    // While seeding is in progress keep polling — fast seed finishes in ~30s.
+    if (d.seeding) {
       setSeeding(true)
       setTimeout(load, 4000)
       return
