@@ -140,10 +140,33 @@ async function fetchReal(
 
 // ────────────────────────────────────────────────────────────────
 // Mock data — realistic Seoul apartment transactions
-// Prices based on 2024 실거래가 averages
+// Calibrated to match the actual Seoul market cycle:
+//   2015-2019  steady growth
+//   2020-2021  boom (low rates + pandemic demand)
+//   2022       sharp correction (rate hikes)
+//   2023       trough / slow recovery
+//   2024-2026  high-price plateau, volume below normal
 // ────────────────────────────────────────────────────────────────
 
-const BASE_PRICE_PER_M2 = 1000 // 만원 — Seoul city-wide average
+const BASE_PRICE_PER_M2 = 1000 // 만원 — Seoul city-wide average (2021 peak basis)
+
+// Price index relative to 2021 peak per year
+const PRICE_CYCLE: Record<number, number> = {
+  2015: 0.58, 2016: 0.62, 2017: 0.67, 2018: 0.73, 2019: 0.76,
+  2020: 0.87, 2021: 1.00, 2022: 0.91, 2023: 0.86,
+  2024: 0.95, 2025: 1.03, 2026: 1.05,
+}
+
+// Volume scale relative to 2021 per year (Seoul 연간 거래량 기반)
+const VOLUME_CYCLE: Record<number, number> = {
+  2015: 0.98, 2016: 1.05, 2017: 1.08, 2018: 0.92, 2019: 0.88,
+  2020: 1.45, 2021: 1.25, 2022: 0.52, 2023: 0.62,
+  2024: 0.82, 2025: 0.80, 2026: 0.72,
+}
+
+// Monthly seasonal multipliers (Jan=0 … Dec=11)
+// Spring (Mar/Apr) and autumn (Oct) peak; Dec/Jan trough
+const SEASONAL: number[] = [0.68, 0.72, 1.18, 1.22, 1.05, 0.92, 1.00, 0.95, 1.12, 1.18, 0.88, 0.62]
 
 const TYPICAL_AREAS = [33, 49, 59, 74, 84, 99, 115, 135, 162]
 const FLOORS = [3, 5, 7, 9, 11, 12, 14, 15, 17, 20, 22, 25, 28]
@@ -176,7 +199,7 @@ function seededRng(seed: number) {
 export function generateMockTransactions(lawdCd: string, dealYmd: string): ApartmentTransaction[] {
   const year = parseInt(dealYmd.slice(0, 4), 10)
   const month = parseInt(dealYmd.slice(4, 6), 10)
-  const multiplier = PRICE_MULTIPLIERS[lawdCd] ?? 1.2
+  const districtMultiplier = PRICE_MULTIPLIERS[lawdCd] ?? 1.2
   const district = SEOUL_DISTRICTS.find(d => d.code === lawdCd)
   const gu = district?.name ?? '서울시'
 
@@ -187,13 +210,21 @@ export function generateMockTransactions(lawdCd: string, dealYmd: string): Apart
   ]
   const dongPool = DONG_NAMES[lawdCd] ?? [`${gu.slice(0, 2)}동`, `신${gu.slice(0, 2)}동`]
 
-  // Volume: richer areas have more transactions (more market activity)
-  const count = Math.floor(35 + multiplier * 22 + (parseInt(lawdCd) % 31))
+  // Apply market cycle + seasonal multipliers so the chart shows realistic patterns
+  const priceCycle  = PRICE_CYCLE[year]  ?? (year < 2015 ? 0.55 : 1.05)
+  const volumeCycle = VOLUME_CYCLE[year] ?? (year < 2015 ? 0.90 : 0.72)
+  const seasonal    = SEASONAL[month - 1] ?? 1.0
+
+  // Base count per district: larger / more active districts get more
+  const baseCount = 30 + districtMultiplier * 18 + (parseInt(lawdCd) % 25)
+  const count = Math.max(3, Math.round(baseCount * volumeCycle * seasonal))
+
   const rng = seededRng(parseInt(lawdCd) * 31 + month * 7 + year)
 
   return Array.from({ length: count }, (_, i) => {
     const area = TYPICAL_AREAS[Math.floor(rng() * TYPICAL_AREAS.length)]
-    const ppm2 = Math.round(BASE_PRICE_PER_M2 * multiplier * (0.78 + rng() * 0.44))
+    // Price varies within ±22% of the cycle-adjusted mean
+    const ppm2 = Math.round(BASE_PRICE_PER_M2 * districtMultiplier * priceCycle * (0.78 + rng() * 0.44))
     const amount = Math.round((area * ppm2) / 500) * 500 // round to 500만원
     const floor = FLOORS[Math.floor(rng() * FLOORS.length)]
     const builtYear = 1985 + Math.floor(rng() * 38)
