@@ -259,7 +259,6 @@ export default function RealityPage() {
               <p className="text-xs text-slate-500 py-8 text-center">데이터 로딩 중…</p>
             )
 
-            // Build sorted month list and district list
             const months = [...new Set(raw.map(r => r.month))].sort()
             const volMap = new Map<string, number>()
             const guTotals = new Map<string, number>()
@@ -273,70 +272,95 @@ export default function RealityPage() {
 
             const maxVol = Math.max(...raw.map(r => r.volume))
 
-            function cellColor(vol: number): string {
-              if (!vol) return 'rgba(30,41,59,0.4)'  // empty — slate-800 faint
+            // Narrow cells (20px) for many months; wider (28px) for few
+            const CELL_W = months.length > 48 ? 20 : 28
+            const CELL_H = 18
+            const LABEL_W = 54
+
+            function cellBg(vol: number): string {
+              if (!vol) return 'rgba(30,41,59,0.5)'
               const t = vol / maxVol
-              // blue scale: low → high opacity
-              if (t < 0.15) return 'rgba(59,130,246,0.20)'
-              if (t < 0.35) return 'rgba(59,130,246,0.45)'
-              if (t < 0.60) return 'rgba(59,130,246,0.70)'
+              if (t < 0.12) return 'rgba(59,130,246,0.18)'
+              if (t < 0.30) return 'rgba(59,130,246,0.42)'
+              if (t < 0.55) return 'rgba(59,130,246,0.68)'
               return 'rgba(59,130,246,0.95)'
             }
 
-            // Show short month labels: '24-01' → '01 (only year on Jan)
-            function monthLabel(m: string): string {
-              const [y, mo] = m.split('-')
-              return mo === '01' ? `${y.slice(2)}'` : mo
+            // Year-header row: show year at Jan, blank otherwise
+            // Optionally show quarter markers (Q2/Q3/Q4) when cells are wide enough
+            function colHeader(m: string): string {
+              const mo = m.slice(5)
+              if (mo === '01') return m.slice(2, 4)  // '15, '16 …
+              if (CELL_W >= 28 && (mo === '04' || mo === '07' || mo === '10')) return '·'
+              return ''
             }
+
+            const isJan = (m: string) => m.slice(5) === '01'
+
+            const totalWidth = months.length * (CELL_W + 1) + LABEL_W + 32
 
             return (
               <div className="overflow-x-auto mt-1">
-                <div style={{ minWidth: Math.max(360, months.length * 34 + 60) }}>
-                  {/* Month header */}
-                  <div className="flex" style={{ marginLeft: 56 }}>
+                <div style={{ minWidth: totalWidth }}>
+                  {/* Year / month header */}
+                  <div className="flex items-end pb-1" style={{ marginLeft: LABEL_W }}>
                     {months.map(m => (
-                      <div key={m} style={{ width: 32, flexShrink: 0 }}
-                        className="text-center text-[9px] text-slate-500 pb-1 font-mono">
-                        {monthLabel(m)}
+                      <div key={m}
+                        style={{
+                          width: CELL_W, flexShrink: 0, marginRight: 1,
+                          borderLeft: isJan(m) ? '1px solid rgba(148,163,184,0.25)' : undefined,
+                          paddingLeft: isJan(m) ? 2 : 0,
+                        }}
+                        className="text-center text-[8px] text-slate-500 font-mono">
+                        {colHeader(m)}
                       </div>
                     ))}
                   </div>
-                  {/* Rows */}
+
+                  {/* District rows */}
                   {districts.map(gu => (
-                    <div key={gu} className="flex items-center mb-0.5">
-                      <div className="text-[10px] text-slate-400 text-right pr-2 shrink-0" style={{ width: 54 }}>
-                        {gu}
-                      </div>
+                    <div key={gu} className="flex items-center mb-px">
+                      <div className="text-[10px] text-slate-400 text-right pr-2 shrink-0"
+                        style={{ width: LABEL_W }}>{gu}</div>
                       {months.map(m => {
                         const vol = volMap.get(`${gu}|${m}`) ?? 0
                         return (
-                          <div key={m} title={`${gu} ${m}: ${vol.toLocaleString()}건`}
-                            style={{ width: 30, height: 18, flexShrink: 0, background: cellColor(vol), marginRight: 2 }}
+                          <div key={m}
+                            title={`${gu} ${m}: ${vol.toLocaleString()}건`}
+                            style={{
+                              width: CELL_W, height: CELL_H, flexShrink: 0, marginRight: 1,
+                              background: cellBg(vol),
+                              borderLeft: isJan(m) ? '1px solid rgba(148,163,184,0.15)' : undefined,
+                            }}
                             className="rounded-sm flex items-center justify-center">
-                            {vol > 0 && (
-                              <span className="text-[8px] text-white/70 font-mono leading-none">
+                            {vol > 0 && CELL_W >= 28 && (
+                              <span className="text-[8px] text-white/60 font-mono leading-none">
                                 {vol >= 1000 ? `${(vol / 1000).toFixed(1)}k` : vol}
                               </span>
                             )}
                           </div>
                         )
                       })}
-                      <div className="text-[9px] text-slate-600 ml-2 shrink-0">
-                        {(guTotals.get(gu) ?? 0).toLocaleString()}
+                      <div className="text-[9px] text-slate-600 ml-2 shrink-0 font-mono">
+                        {((guTotals.get(gu) ?? 0) / 1000).toFixed(0)}k
                       </div>
                     </div>
                   ))}
-                  {/* Color scale */}
-                  <div className="flex items-center gap-2 mt-3 ml-14">
-                    <span className="text-[9px] text-slate-500">거래량:</span>
-                    {[0.1, 0.3, 0.6, 1.0].map((t, i) => (
+
+                  {/* Legend */}
+                  <div className="flex items-center gap-3 mt-3" style={{ marginLeft: LABEL_W }}>
+                    <span className="text-[9px] text-slate-500">거래량 강도:</span>
+                    {[0.08, 0.25, 0.50, 0.85].map((t, i) => (
                       <span key={i} className="flex items-center gap-1 text-[9px] text-slate-500">
-                        <span style={{ display:'inline-block', width:14, height:10,
-                          background: cellColor(Math.round(t * maxVol)), borderRadius: 2 }} />
-                        {i === 0 ? '낮음' : i === 3 ? '높음' : ''}
+                        <span style={{ display: 'inline-block', width: 14, height: 10,
+                          background: cellBg(Math.round(t * maxVol)), borderRadius: 2 }} />
+                        {['낮음', '', '', '높음'][i]}
                       </span>
                     ))}
-                    <span className="text-[9px] text-slate-600 ml-2">숫자 = 건수 · 우측 = 누계</span>
+                    <span className="text-[9px] text-slate-600 ml-1">
+                      · 우측 숫자 = 누적 건수 · 세로선 = 연도 경계
+                      {months.length < 120 && ' · 히스토리 백그라운드 로딩 중 (새로고침하면 더 표시)'}
+                    </span>
                   </div>
                 </div>
               </div>
