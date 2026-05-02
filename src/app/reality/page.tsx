@@ -120,11 +120,6 @@ export default function RealityPage() {
         <p className="text-slate-400 text-sm mt-1">
           가격지수 · 거래량 · 호가-실거래 갭 — 무주택자 관점에서 본 서울 아파트 시장의 실제 모습
         </p>
-        <div className="flex flex-wrap gap-2 mt-1">
-          <RealBadge source="거래량 — 국토교통부 실거래가 DB" />
-          <RealBadge source="가격지수 — 부동산원 R-ONE" />
-          <EstBadge note="호가-갭 — 공개 API 없음, 시장 데이터 추정" />
-        </div>
       </div>
 
       {/* Main thesis — balanced dual perspective */}

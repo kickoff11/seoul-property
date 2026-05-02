@@ -98,11 +98,6 @@ export default function TimingPage() {
         <p className="text-slate-400 text-sm mt-1">
           지금 서울 아파트를 사야 할까, 기다려야 할까? 핵심 지표를 종합해 매수 타이밍을 분석합니다.
         </p>
-        <div className="flex flex-wrap gap-2 mt-1">
-          <RealBadge source="거래량 — 국토교통부 DB" />
-          <RealBadge source="가격지수 — 부동산원 R-ONE" />
-          <EstBadge note="갭·부담·정책 — 공개보고서 기반 추정" />
-        </div>
       </div>
 
       {/* Verdict banner */}

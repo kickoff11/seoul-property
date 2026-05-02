@@ -119,10 +119,6 @@ export default function SupplyDemandPage() {
         <p className="text-slate-400 text-sm mt-1">
           2025-2026 공급 절벽과 수요 구조 변화 — 매수 타이밍의 핵심 배경 데이터
         </p>
-        <div className="flex flex-wrap gap-2 mt-1">
-          <MixedBadge note="공급 실적: 국토부 / 공급 전망: 부동산R114 / 수요: 공개보고서 추정" />
-          <RealBadge source="인구·가구수 — 통계청" />
-        </div>
       </div>
 
       {/* Combined KPIs */}

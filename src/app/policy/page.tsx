@@ -118,9 +118,6 @@ export default function PolicyPage() {
         <p className="text-slate-400 text-sm mt-1">
           현재 시행·예정 중인 주요 주택 정책과 매수 타이밍에 대한 함의를 분석합니다.
         </p>
-        <div className="flex flex-wrap gap-2 mt-1">
-          <EstBadge note="정책 효과 평가 — 공개 발표 + 시장 데이터 기반 추정" />
-        </div>
       </div>
 
       {/* Summary */}

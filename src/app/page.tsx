@@ -10,7 +10,7 @@ import VacancyAlert from '@/components/VacancyAlert'
 import { DistrictSummary, ApartmentTransaction, PriceTrend, VacantComplex, SupplyByYear, SentimentPoint, InterestRatePoint } from '@/types'
 import { fmt, fmtPricePerM2 } from '@/lib/analysis'
 import Link from 'next/link'
-import { RealBadge, EstBadge, DataSource, MockBadge, RefreshingBadge } from '@/components/DataBadge'
+import { DataSource, MockBadge, RefreshingBadge } from '@/components/DataBadge'
 
 const SeoulMap = dynamic(() => import('@/components/SeoulMap'), { ssr: false })
 
@@ -110,13 +110,6 @@ export default function Dashboard() {
         <p className="text-slate-400 text-sm mt-1">
           국토교통부 실거래가 공개시스템 기반 · 호가 대비 실제 거래가를 한눈에 확인하세요
         </p>
-        <div className="flex flex-wrap gap-2 mt-1">
-          {data.isMock
-            ? <MockBadge detail="국토교통부 API 할당량 소진 — 거래 건수·가격·지역 분포가 실제와 다릅니다" />
-            : <RealBadge source="거래 데이터 — 국토교통부 실거래가" />}
-          <EstBadge note="공급 전망 · 수요 심리 — 공개보고서 기반" />
-          {data.backfilling && <RefreshingBadge />}
-        </div>
       </div>
 
       {/* KPI cards */}
