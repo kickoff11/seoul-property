@@ -27,6 +27,10 @@ const LAZY_PAUSE_MS       = 400   // ms between months during lazy backfill
 let lastRefreshedAt = 0
 let activeSeed: Promise<void> | null = null   // fast seed — blocks spinner
 let historyRunning  = false                    // lazy backfill — silent
+let _usingMockFallback = false
+
+/** True when real MOLIT API failed and we fell back to generated mock data */
+export function isMockFallback(): boolean { return _usingMockFallback }
 
 // ── Public API ────────────────────────────────────────────────
 
@@ -75,12 +79,9 @@ async function seedMonths(months: number, concurrency: number): Promise<void> {
     const cached  = getCachedDistricts(ymd)
     const toFetch = SEOUL_DISTRICTS.filter(d => !cached.has(d.code))
     await runBatched(toFetch, concurrency, async district => {
-      try {
-        const txs = await fetchTransactionsFromApi(district.code, ymd)
-        saveTransactions(txs, district.code, ymd)
-      } catch (err) {
-        console.warn(`[seed] skipping ${district.name} ${ymd}:`, (err as Error).message)
-      }
+      const txs = await fetchTransactionsFromApi(district.code, ymd)
+      saveTransactions(txs, district.code, ymd)
+      if (txs.length > 0 && txs[0].id.startsWith('mock-')) _usingMockFallback = true
     })
     if (toFetch.length > 0) {
       await new Promise(r => setTimeout(r, FAST_PAUSE_MS))

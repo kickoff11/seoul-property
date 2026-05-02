@@ -80,6 +80,21 @@ export async function fetchTransactionsFromApi(
     return generateMockTransactions(lawdCd, dealYmd)
   }
 
+  try {
+    return await fetchReal(apiKey, lawdCd, dealYmd)
+  } catch (err) {
+    // Real API unavailable (quota/rate-limit/network) — serve mock data so the
+    // app never shows a blank dashboard. The mock-data banner will indicate this.
+    console.warn(`[molit] mock fallback ${lawdCd} ${dealYmd}:`, (err as Error).message)
+    return generateMockTransactions(lawdCd, dealYmd)
+  }
+}
+
+async function fetchReal(
+  apiKey: string,
+  lawdCd: string,
+  dealYmd: string,
+): Promise<ApartmentTransaction[]> {
   const district = SEOUL_DISTRICTS.find(d => d.code === lawdCd)
   const gu       = district?.name ?? ''
   const results: ApartmentTransaction[] = []
