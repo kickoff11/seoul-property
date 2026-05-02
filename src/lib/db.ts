@@ -302,7 +302,7 @@ export function getCachedDistricts(dealYmd: string): Set<string> {
 // ── Gangnam-specific queries ───────────────────────────────────
 
 /** Monthly transaction count split by price tier (15억 / 25억 thresholds). */
-export function getGangnamPriceTiersByMonth(): {
+export function getDistrictPriceTiersByMonth(lawdCd: string): {
   month: string; under15: number; btw1525: number; over25: number; total: number
 }[] {
   return getDb().prepare(`
@@ -313,14 +313,14 @@ export function getGangnamPriceTiersByMonth(): {
       SUM(CASE WHEN amount >= 250000 THEN 1 ELSE 0 END)                     AS over25,
       COUNT(*) AS total
     FROM transactions
-    WHERE lawd_cd = '11680'
+    WHERE lawd_cd = ?
     GROUP BY deal_year, deal_month
     ORDER BY deal_year ASC, deal_month ASC
-  `).all() as { month: string; under15: number; btw1525: number; over25: number; total: number }[]
+  `).all(lawdCd) as { month: string; under15: number; btw1525: number; over25: number; total: number }[]
 }
 
-/** Top apartments in Gangnam by transaction count. */
-export function getGangnamTopApts(limit = 12): {
+/** Top apartments in a district by transaction count. */
+export function getDistrictTopApts(lawdCd: string, limit = 12): {
   aptName: string; count: number; avgAmount: number; avgPricePerM2: number; maxAmount: number
 }[] {
   return getDb().prepare(`
@@ -328,11 +328,11 @@ export function getGangnamTopApts(limit = 12): {
       AVG(amount) AS avgAmount, AVG(price_per_m2) AS avgPricePerM2,
       MAX(amount) AS maxAmount
     FROM transactions
-    WHERE lawd_cd = '11680'
+    WHERE lawd_cd = ?
     GROUP BY apt_name
     ORDER BY count DESC
     LIMIT ?
-  `).all(limit) as { aptName: string; count: number; avgAmount: number; avgPricePerM2: number; maxAmount: number }[]
+  `).all(lawdCd, limit) as { aptName: string; count: number; avgAmount: number; avgPricePerM2: number; maxAmount: number }[]
 }
 
 export function getCachedApi<T>(key: string, maxAgeMs: number): T | null {

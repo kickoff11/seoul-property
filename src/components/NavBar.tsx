@@ -5,14 +5,23 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import clsx from 'clsx'
 
-const links = [
+const mainLinks = [
   { href: '/',              label: '대시보드' },
   { href: '/timing',        label: '매수 타이밍' },
   { href: '/reality',       label: '시장 현실' },
   { href: '/supply-demand', label: '공급·수요' },
   { href: '/policy',        label: '정책 분석' },
-  { href: '/gangnam',       label: '강남 분석' },
 ]
+
+const districtLinks = [
+  { href: '/gangnam',   label: '강남구' },
+  { href: '/seocho',    label: '서초구' },
+  { href: '/yongsan',   label: '용산구' },
+  { href: '/seongdong', label: '성동구' },
+  { href: '/songpa',    label: '송파구' },
+]
+
+const links = [...mainLinks, ...districtLinks]
 
 export default function NavBar() {
   const pathname  = usePathname()
@@ -33,18 +42,27 @@ export default function NavBar() {
           </Link>
 
           {/* Desktop links */}
-          <div className="hidden md:flex gap-1">
-            {links.map(l => (
-              <Link
-                key={l.href}
-                href={l.href}
+          <div className="hidden md:flex items-center gap-1">
+            {mainLinks.map(l => (
+              <Link key={l.href} href={l.href}
                 className={clsx(
                   'px-3 py-1.5 rounded text-sm font-medium transition-colors',
                   pathname === l.href
                     ? 'bg-blue-600 text-white'
                     : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800',
-                )}
-              >
+                )}>
+                {l.label}
+              </Link>
+            ))}
+            <span className="w-px h-4 bg-slate-700 mx-1 shrink-0" />
+            {districtLinks.map(l => (
+              <Link key={l.href} href={l.href}
+                className={clsx(
+                  'px-2.5 py-1.5 rounded text-xs font-medium transition-colors',
+                  pathname === l.href
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800',
+                )}>
                 {l.label}
               </Link>
             ))}
@@ -74,23 +92,31 @@ export default function NavBar() {
 
         {/* Mobile dropdown */}
         {open && (
-          <div className="md:hidden pb-3 space-y-0.5 border-t border-slate-800 pt-2">
-            {links.map(l => (
-              <Link
-                key={l.href}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className={clsx(
-                  'block px-3 py-2.5 rounded text-sm font-medium transition-colors',
-                  pathname === l.href
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-300 hover:bg-slate-800',
-                )}
-              >
-                {l.label}
-              </Link>
-            ))}
-            <p className="px-3 pt-2 text-xs text-slate-600">데이터: 국토교통부 + 한국부동산원</p>
+          <div className="md:hidden pb-3 border-t border-slate-800 pt-2">
+            <div className="space-y-0.5">
+              {mainLinks.map(l => (
+                <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
+                  className={clsx(
+                    'block px-3 py-2.5 rounded text-sm font-medium transition-colors',
+                    pathname === l.href ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800',
+                  )}>
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+            <p className="px-3 pt-3 pb-1 text-[10px] font-semibold text-slate-600 uppercase tracking-wide">지역 심층 분석</p>
+            <div className="space-y-0.5">
+              {districtLinks.map(l => (
+                <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
+                  className={clsx(
+                    'block px-3 py-2 rounded text-sm font-medium transition-colors',
+                    pathname === l.href ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800',
+                  )}>
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+            <p className="px-3 pt-3 text-xs text-slate-600">데이터: 국토교통부 + 한국부동산원</p>
           </div>
         )}
       </div>

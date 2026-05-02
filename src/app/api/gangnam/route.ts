@@ -1,29 +1,31 @@
 export const dynamic = 'force-dynamic'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { ensureSeeded, isMockFallback } from '@/lib/seed'
 import {
   getMonthlyTrends,
-  getGangnamPriceTiersByMonth,
-  getGangnamTopApts,
+  getDistrictPriceTiersByMonth,
+  getDistrictTopApts,
 } from '@/lib/db'
 import { buildTrends } from '@/lib/analysis'
 
 const POLICY_MONTH = '2025-10' // 10·15 대출규제 시행
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   ensureSeeded()
 
-  const trendRows  = getMonthlyTrends('11680')
+  const lawdCd = req.nextUrl.searchParams.get('lawdCd') ?? '11680'
+
+  const trendRows  = getMonthlyTrends(lawdCd)
   const trends     = buildTrends(trendRows)
-  const priceTiers = getGangnamPriceTiersByMonth()
-  const topApts    = getGangnamTopApts(12).map(a => ({
+  const priceTiers = getDistrictPriceTiersByMonth(lawdCd)
+  const topApts    = getDistrictTopApts(lawdCd, 12).map(a => ({
     ...a,
     avgAmount:     Math.round(a.avgAmount),
     avgPricePerM2: Math.round(a.avgPricePerM2),
     maxAmount:     Math.round(a.maxAmount),
   }))
 
-  // Pre/post policy comparison (use only months with enough data)
+  // Pre/post policy comparison
   const preMonths  = trends.filter(t => t.month < POLICY_MONTH)
   const postMonths = trends.filter(t => t.month >= POLICY_MONTH)
 
