@@ -4,12 +4,11 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
 import { PriceTrend } from '@/types'
-import { MockBadge, RefreshingBadge, QuotaRefreshAlert } from './DataBadge'
+import { RefreshingBadge } from './DataBadge'
 
 interface Props {
   data:         PriceTrend[]
   title?:       string
-  isMock?:      boolean
   backfilling?: boolean
 }
 
@@ -20,7 +19,7 @@ function tooltipFormatter(value: number, name: string) {
   return [value, name]
 }
 
-export default function PriceTrendChart({ data, title, isMock, backfilling }: Props) {
+export default function PriceTrendChart({ data, title, backfilling }: Props) {
   if (!data.length) return (
     <div className="flex items-center justify-center h-64 text-slate-500">데이터 로딩 중…</div>
   )
@@ -33,13 +32,9 @@ export default function PriceTrendChart({ data, title, isMock, backfilling }: Pr
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
       {title && (
-        <div className="mb-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-sm font-semibold text-slate-300">{title}</h3>
-            {isMock      && <MockBadge detail="생성된 모의 거래 데이터 — 실제 거래 추이와 다릅니다" />}
-            {backfilling && <RefreshingBadge />}
-          </div>
-          {isMock && <QuotaRefreshAlert />}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <h3 className="text-sm font-semibold text-slate-300">{title}</h3>
+          {backfilling && <RefreshingBadge />}
         </div>
       )}
       <div className="overflow-x-auto"><div style={{ minWidth: 320 }}>

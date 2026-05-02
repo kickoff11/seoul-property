@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
-import { ensureSeeded, isMockFallback } from '@/lib/seed'
+import { ensureSeeded } from '@/lib/seed'
 import {
   getMonthlyTrends,
   getDistrictPriceTiersByMonth,
@@ -50,6 +50,5 @@ export async function GET(req: NextRequest) {
     topApts,
     prePolicy,
     postPolicy,
-    isMock: isMockFallback(),
   }, { headers: { 'Cache-Control': 'no-store' } })
 }

@@ -8,7 +8,7 @@ import {
 } from 'recharts'
 import { PriceTrend } from '@/types'
 import { fmt, fmtPricePerM2 } from '@/lib/analysis'
-import { MockBadge, QuotaRefreshAlert, RealBadge, SectionHeader } from '@/components/DataBadge'
+import { RealBadge, RefreshingBadge, SectionHeader } from '@/components/DataBadge'
 import clsx from 'clsx'
 
 // ── Policy constants (10·15 주택시장 안정화 대책, 2025.10.16 시행) ─
@@ -88,7 +88,6 @@ interface DistrictData {
   topApts:    { aptName: string; count: number; avgAmount: number; avgPricePerM2: number; maxAmount: number }[]
   prePolicy:  { avgMonthly: number; avgPrice: number; months: number }
   postPolicy: { avgMonthly: number; avgPrice: number; months: number }
-  isMock:     boolean
 }
 
 // ── Helpers ─────────────────────────────────────────────────────
@@ -159,16 +158,13 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
       <div>
         <div className="flex flex-wrap items-center gap-3 mb-1">
           <h1 className="text-xl font-bold text-slate-100">{config.name} 심층 분석</h1>
-          {data.isMock
-            ? <MockBadge detail="모의 데이터 — 실제 정책 충격이 반영되지 않습니다. 자정 KST 이후 실제 데이터로 갱신됩니다." />
-            : <RealBadge source="국토교통부" />}
+          <RealBadge source="국토교통부" />
         </div>
         <p className="text-slate-400 text-sm leading-relaxed">{config.description}</p>
         <p className="text-slate-500 text-xs mt-1">
           2025년 10월 16일 시행된 고가주택 주담대 상한제(10·15 대책)가
           거래량과 가격에 미친 영향을 실거래 데이터로 검증합니다.
         </p>
-        {data.isMock && <QuotaRefreshAlert />}
       </div>
 
       {/* Policy explainer */}
@@ -195,18 +191,6 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
           출처: 금융위원회 10·15 주택시장 안정화 대책 보도자료 · 전 서울 투기과열지구 지정 포함
         </p>
       </div>
-
-      {/* Mock data notice */}
-      {data.isMock && (
-        <div className="bg-orange-950/20 border border-orange-800/30 rounded-xl p-4">
-          <p className="text-xs font-semibold text-orange-400 mb-1">모의 데이터 한계 안내</p>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            현재 모의 데이터는 계절성·경기 주기는 반영하지만,
-            <strong className="text-slate-300"> 10·15 대출규제에 따른 실제 거래량 급감 효과는 반영하지 않습니다.</strong>{' '}
-            실제 데이터에서는 2025년 10월 이후 거래량 감소와 25억 초과 구간 거래 비중 변화가 나타납니다.
-          </p>
-        </div>
-      )}
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -269,7 +253,7 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
           <SectionHeader
             title="월별 거래량"
-            badge={data.isMock ? <MockBadge /> : <RealBadge source="국토교통부" />}
+            badge={<RealBadge source="국토교통부" />}
             sub="수직선 = 10·15 대출규제 시행일 (2025.10.16)"
           />
           <div className="overflow-x-auto"><div style={{ minWidth: 300 }}>
@@ -299,7 +283,7 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
           <SectionHeader
             title="월별 평균 거래가"
-            badge={data.isMock ? <MockBadge /> : <RealBadge source="국토교통부" />}
+            badge={<RealBadge source="국토교통부" />}
             sub="수직선 = 10·15 대출규제 시행일 (2025.10.16)"
           />
           <div className="overflow-x-auto"><div style={{ minWidth: 300 }}>
@@ -325,7 +309,7 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
       <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
         <SectionHeader
           title="월별 거래 가격대 분포 — 대출규제 구간별"
-          badge={data.isMock ? <MockBadge /> : <RealBadge source="국토교통부" />}
+          badge={<RealBadge source="국토교통부" />}
           sub="10·15 대책 이후 25억 초과(2억 한도) 구간 거래 비중 변화를 확인합니다"
         />
         <div className="overflow-x-auto"><div style={{ minWidth: 400 }}>
@@ -416,7 +400,7 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
           <SectionHeader
             title={`${config.name} 주요 단지 거래 현황`}
-            badge={data.isMock ? <MockBadge /> : <RealBadge source="국토교통부" />}
+            badge={<RealBadge source="국토교통부" />}
             sub="분석 기간 내 거래량 기준 상위 단지"
           />
           <div className="overflow-x-auto">

@@ -76,17 +76,19 @@ export async function fetchTransactionsFromApi(
   dealYmd: string, // YYYYMM
 ): Promise<ApartmentTransaction[]> {
   const apiKey = process.env.MOLIT_API_KEY
-  if (!apiKey || process.env.USE_MOCK_DATA === 'true') {
+
+  // Explicit dev override: USE_MOCK_DATA=true in .env.local
+  if (process.env.USE_MOCK_DATA === 'true') {
     return generateMockTransactions(lawdCd, dealYmd)
   }
+
+  if (!apiKey) return []  // no key configured — return empty, don't fake data
 
   try {
     return await fetchReal(apiKey, lawdCd, dealYmd)
   } catch (err) {
-    // Real API unavailable (quota/rate-limit/network) — serve mock data so the
-    // app never shows a blank dashboard. The mock-data banner will indicate this.
-    console.warn(`[molit] mock fallback ${lawdCd} ${dealYmd}:`, (err as Error).message)
-    return generateMockTransactions(lawdCd, dealYmd)
+    console.warn(`[molit] fetch failed ${lawdCd} ${dealYmd}:`, (err as Error).message)
+    return []  // API error — return empty rather than injecting fake transactions
   }
 }
 

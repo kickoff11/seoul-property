@@ -10,7 +10,7 @@ import VacancyAlert from '@/components/VacancyAlert'
 import { DistrictSummary, ApartmentTransaction, PriceTrend, VacantComplex, SupplyByYear, SentimentPoint, InterestRatePoint } from '@/types'
 import { fmt, fmtPricePerM2 } from '@/lib/analysis'
 import Link from 'next/link'
-import { DataSource, MockBadge, RefreshingBadge } from '@/components/DataBadge'
+import { DataSource, RefreshingBadge } from '@/components/DataBadge'
 
 const SeoulMap = dynamic(() => import('@/components/SeoulMap'), { ssr: false })
 
@@ -22,7 +22,6 @@ interface DashboardData {
   supply:       SupplyByYear[]
   sentiment:    SentimentPoint | null
   interestRate: InterestRatePoint | null
-  isMock:       boolean
   backfilling:  boolean
 }
 
@@ -58,7 +57,6 @@ export default function Dashboard() {
       supply:       sup.annualSupply,
       sentiment:    dem.sentiment?.[dem.sentiment.length - 1] ?? null,
       interestRate: dem.interestRates?.[dem.interestRates.length - 1] ?? null,
-      isMock:       !!d.isMock,
       backfilling:  !!d.backfilling,
     })
   }, [])
@@ -207,7 +205,6 @@ export default function Dashboard() {
         <PriceTrendChart
           data={districtTrends.length ? districtTrends : data.trends}
           title={`${selectedGu ?? '서울 전체'} 월별 거래 추이`}
-          isMock={data.isMock}
           backfilling={data.backfilling}
         />
         <DistrictRanking data={data.districts} />

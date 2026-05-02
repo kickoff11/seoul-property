@@ -9,7 +9,7 @@ import {
 } from 'recharts'
 import { AskTransactionGap, DistrictAskGap } from '@/lib/market-reality'
 import clsx from 'clsx'
-import { RealBadge, EstBadge, SectionHeader, DataSource, MockBadge, RefreshingBadge, QuotaRefreshAlert } from '@/components/DataBadge'
+import { RealBadge, EstBadge, SectionHeader, DataSource, RefreshingBadge } from '@/components/DataBadge'
 
 interface RealityData {
   monthlyVolume:           { month: string; volume: number }[]
@@ -28,7 +28,6 @@ interface RealityData {
   troughIndex:         number | null
   currentIndex:        number | null
   changeFromPeak:      number | null
-  isMockVolume:        boolean
   isBackfilling:       boolean
 }
 
@@ -213,20 +212,10 @@ export default function RealityPage() {
         <div className="flex items-start justify-between mb-3">
           <SectionHeader
             title="월별 서울 아파트 매매 거래량"
-            badge={
-              data.isMockVolume
-                ? <MockBadge detail="생성된 모의 거래 데이터 — 월별 패턴이 실제와 다릅니다. API 할당량 초기화 후 자동 갱신됩니다." />
-                : data.volumeIsReal
-                  ? <RealBadge source="국토교통부" />
-                  : <EstBadge />
-            }
-            sub={
-              data.isMockVolume
-                ? '모의 데이터 표시 중 — 실제 거래 패턴과 다름'
-                : volumeView === 'total'
-                  ? '평년 기준선(6,500건) 대비 현재 거래량 수준'
-                  : '구별 월간 거래량 — 색상 강도 = 거래 건수'
-            }
+            badge={data.volumeIsReal ? <RealBadge source="국토교통부" /> : <EstBadge />}
+            sub={volumeView === 'total'
+              ? '평년 기준선(6,500건) 대비 현재 거래량 수준'
+              : '구별 월간 거래량 — 색상 강도 = 거래 건수'}
           />
           <div className="flex items-center gap-2 shrink-0 ml-4">
             {data.isBackfilling && <RefreshingBadge />}
@@ -241,8 +230,6 @@ export default function RealityPage() {
             ))}
           </div>
         </div>
-
-        {data.isMockVolume && <QuotaRefreshAlert />}
 
         {volumeView === 'total' ? (
           <>

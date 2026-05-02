@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import {
   FACT_CHECKS, SELLER_DENIAL, DISTRICT_ASK_GAP,
 } from '@/lib/market-reality'
-import { ensureSeeded, isMockFallback, isHistoryBackfilling } from '@/lib/seed'
+import { ensureSeeded, isHistoryBackfilling } from '@/lib/seed'
 import { getMonthlyVolume, getMonthlyVolumeByDistrict, getCachedApi, setCachedApi } from '@/lib/db'
 import { fetchSeoulPriceIndex, fetchSeoulJeonseIndex, fetchSeoulCityIndexSeries } from '@/lib/rone-api'
 
@@ -229,7 +229,6 @@ export async function GET() {
     districtAskGap:     DISTRICT_ASK_GAP,
 
     // Data quality state — used for per-section badges on the client
-    isMockVolume:  isMockFallback(),
     isBackfilling: isHistoryBackfilling(),
   })
 }
