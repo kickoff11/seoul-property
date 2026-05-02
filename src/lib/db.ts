@@ -60,6 +60,12 @@ function initSchema(db: Database.Database) {
       record_count INTEGER NOT NULL,
       PRIMARY KEY (lawd_cd, deal_ymd)
     );
+
+    CREATE TABLE IF NOT EXISTS api_cache (
+      cache_key  TEXT PRIMARY KEY,
+      payload    TEXT NOT NULL,
+      cached_at  TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `)
 }
 
@@ -291,6 +297,21 @@ export function getCachedDistricts(dealYmd: string): Set<string> {
               AND fetched_at > datetime('now', '-24 hours')`)
     .all(dealYmd) as { lawd_cd: string }[]
   return new Set(rows.map(r => r.lawd_cd))
+}
+
+export function getCachedApi<T>(key: string, maxAgeMs: number): T | null {
+  const row = getDb()
+    .prepare(`SELECT payload, cached_at FROM api_cache WHERE cache_key = ?`)
+    .get(key) as { payload: string; cached_at: string } | undefined
+  if (!row) return null
+  if (Date.now() - new Date(row.cached_at).getTime() > maxAgeMs) return null
+  return JSON.parse(row.payload) as T
+}
+
+export function setCachedApi(key: string, payload: unknown): void {
+  getDb()
+    .prepare(`INSERT OR REPLACE INTO api_cache (cache_key, payload) VALUES (?, ?)`)
+    .run(key, JSON.stringify(payload))
 }
 
 export function getInactiveComplexes(monthsThreshold = 18) {

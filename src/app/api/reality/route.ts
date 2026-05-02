@@ -4,7 +4,7 @@ import {
   FACT_CHECKS, SELLER_DENIAL, DISTRICT_ASK_GAP,
 } from '@/lib/market-reality'
 import { ensureSeeded } from '@/lib/seed'
-import { getMonthlyVolume, getMonthlyVolumeByDistrict } from '@/lib/db'
+import { getMonthlyVolume, getMonthlyVolumeByDistrict, getCachedApi, setCachedApi } from '@/lib/db'
 import { fetchSeoulPriceIndex, fetchSeoulJeonseIndex, fetchSeoulCityIndexSeries } from '@/lib/rone-api'
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -88,11 +88,38 @@ async function getRealPriceData(): Promise<{
 
   // Quarterly series from 2021-01 to now
   const seriesMonths = quarterlyMonths('202101', currentYm)
+  const seriesCacheKey = `price_series:${currentYm}`
+  const jeonseKey      = `jeonse:${currentYm}`
+  const saleKey        = `sale:${currentYm}`
+
+  const TTL_HIST = 24 * 60 * 60 * 1_000   // 24 h for historical quarters
+  const TTL_CUR  =      60 * 60 * 1_000   // 1 h for current month
+
+  type SeriesRow = { month: string; index: number }
+  type GusRow    = { gu: string; index: number }
 
   const [seriesData, jeonseRows, currentRows] = await Promise.all([
-    fetchSeoulCityIndexSeries(seriesMonths),
-    fetchSeoulJeonseIndex(currentYm),
-    fetchSeoulPriceIndex(currentYm),
+    (async () => {
+      const cached = getCachedApi<SeriesRow[]>(seriesCacheKey, TTL_HIST)
+      if (cached) return cached
+      const data = await fetchSeoulCityIndexSeries(seriesMonths)
+      if (data.length) setCachedApi(seriesCacheKey, data)
+      return data
+    })(),
+    (async () => {
+      const cached = getCachedApi<GusRow[]>(jeonseKey, TTL_CUR)
+      if (cached) return cached
+      const data = await fetchSeoulJeonseIndex(currentYm)
+      if (data.length) setCachedApi(jeonseKey, data)
+      return data
+    })(),
+    (async () => {
+      const cached = getCachedApi<GusRow[]>(saleKey, TTL_CUR)
+      if (cached) return cached
+      const data = await fetchSeoulPriceIndex(currentYm)
+      if (data.length) setCachedApi(saleKey, data)
+      return data
+    })(),
   ])
 
   if (!seriesData.length || !currentRows.length) {
