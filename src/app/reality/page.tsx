@@ -299,11 +299,17 @@ export default function RealityPage() {
 
             const totalWidth = months.length * (CELL_W + 1) + LABEL_W + 32
 
+            // bg must match the card background (slate-800 = #1e293b) so sticky
+            // cells occlude scrolling content behind them
+            const STICKY_BG = '#1e293b'
+
             return (
               <div className="overflow-x-auto mt-1">
                 <div style={{ minWidth: totalWidth }}>
                   {/* Year / month header */}
-                  <div className="flex items-end pb-1" style={{ marginLeft: LABEL_W }}>
+                  <div className="flex items-end pb-1">
+                    {/* Sticky blank placeholder keeps header aligned with label column */}
+                    <div style={{ width: LABEL_W, flexShrink: 0, position: 'sticky', left: 0, zIndex: 2, background: STICKY_BG }} />
                     {months.map(m => (
                       <div key={m}
                         style={{
@@ -321,7 +327,7 @@ export default function RealityPage() {
                   {districts.map(gu => (
                     <div key={gu} className="flex items-center mb-px">
                       <div className="text-[10px] text-slate-400 text-right pr-2 shrink-0"
-                        style={{ width: LABEL_W }}>{gu}</div>
+                        style={{ width: LABEL_W, position: 'sticky', left: 0, zIndex: 1, background: STICKY_BG }}>{gu}</div>
                       {months.map(m => {
                         const vol = volMap.get(`${gu}|${m}`) ?? 0
                         return (
