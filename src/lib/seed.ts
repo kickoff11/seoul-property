@@ -76,8 +76,14 @@ async function seedMonths(months: number, concurrency: number): Promise<void> {
     const cached  = getCachedDistricts(ymd)
     const toFetch = SEOUL_DISTRICTS.filter(d => !cached.has(d.code))
     await runBatched(toFetch, concurrency, async district => {
-      const txs = await fetchTransactionsFromApi(district.code, ymd)
-      saveTransactions(txs, district.code, ymd)
+      try {
+        const txs = await fetchTransactionsFromApi(district.code, ymd)
+        saveTransactions(txs, district.code, ymd)
+      } catch (err) {
+        // Don't log this fetch — leaving it out of fetch_log lets the next
+        // ensureSeeded() retry it (e.g. once the MOLIT daily quota resets).
+        console.warn(`[seed] fast skip ${district.name} ${ymd}:`, (err as Error).message)
+      }
     })
     if (toFetch.length > 0) {
       await new Promise(r => setTimeout(r, FAST_PAUSE_MS))

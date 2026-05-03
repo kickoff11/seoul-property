@@ -73,11 +73,14 @@ function initSchema(db: Database.Database) {
 
 export function isCached(lawdCd: string, dealYmd: string): boolean {
   const row = getDb()
-    .prepare('SELECT fetched_at FROM fetch_log WHERE lawd_cd = ? AND deal_ymd = ?')
-    .get(lawdCd, dealYmd) as { fetched_at: string } | undefined
+    .prepare('SELECT fetched_at, record_count FROM fetch_log WHERE lawd_cd = ? AND deal_ymd = ?')
+    .get(lawdCd, dealYmd) as { fetched_at: string; record_count: number } | undefined
   if (!row) return false
-  // Treat entries older than 24 h as stale
-  return Date.now() - new Date(row.fetched_at).getTime() < 86_400_000
+  const ageMs = Date.now() - new Date(row.fetched_at).getTime()
+  // Zero-record entries get a short TTL so a transient MOLIT outage or
+  // exhausted daily quota doesn't suppress a district for a full day.
+  const ttl = row.record_count > 0 ? 86_400_000 : 3_600_000
+  return ageMs < ttl
 }
 
 // ── Writes ─────────────────────────────────────────────────────
@@ -292,9 +295,17 @@ export function getMedianTransactionPrice(recentMonths = 3): number | null {
 
 /** Returns the set of lawd_cd codes already cached for a given month. */
 export function getCachedDistricts(dealYmd: string): Set<string> {
+  // Successful fetches stay cached for 24 h. Empty results (likely a MOLIT
+  // outage or exhausted daily quota) are retried after 1 h so newly
+  // available data flows in promptly once the quota resets.
   const rows = getDb()
-    .prepare(`SELECT lawd_cd FROM fetch_log WHERE deal_ymd = ?
-              AND fetched_at > datetime('now', '-24 hours')`)
+    .prepare(`SELECT lawd_cd FROM fetch_log
+              WHERE deal_ymd = ?
+                AND (
+                  (record_count > 0  AND fetched_at > datetime('now', '-24 hours'))
+                  OR
+                  (record_count = 0  AND fetched_at > datetime('now', '-1 hour'))
+                )`)
     .all(dealYmd) as { lawd_cd: string }[]
   return new Set(rows.map(r => r.lawd_cd))
 }

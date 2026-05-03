@@ -84,12 +84,10 @@ export async function fetchTransactionsFromApi(
 
   if (!apiKey) return []  // no key configured — return empty, don't fake data
 
-  try {
-    return await fetchReal(apiKey, lawdCd, dealYmd)
-  } catch (err) {
-    console.warn(`[molit] fetch failed ${lawdCd} ${dealYmd}:`, (err as Error).message)
-    return []  // API error — return empty rather than injecting fake transactions
-  }
+  // Throws on API/network errors so the caller can avoid caching a failed
+  // fetch as an empty result (which would block retries for 24 h after the
+  // MOLIT daily quota resets).
+  return fetchReal(apiKey, lawdCd, dealYmd)
 }
 
 async function fetchReal(
