@@ -8,13 +8,20 @@ import {
 } from 'recharts'
 import { PriceTrend } from '@/types'
 import { fmt, fmtPricePerM2 } from '@/lib/analysis'
-import { RealBadge, RefreshingBadge, SectionHeader } from '@/components/DataBadge'
+import { RealBadge, SectionHeader } from '@/components/DataBadge'
 import clsx from 'clsx'
 
-// ── Policy constants (10·15 주택시장 안정화 대책, 2025.10.16 시행) ─
-const POLICY_MONTH = '2025-10'
-const POLICY_X     = '25-10'  // YY-MM axis format
-const POLICY_LABEL = '10·15 대출규제'
+// ── Policy events shown as reference lines on the charts ─────────
+// Short-form month is the x-axis key (YY-MM); fullMonth is used to
+// decide which events fall within a chart's visible date range.
+const POLICY_EVENTS = [
+  { month: '17-08', fullMonth: '2017-08', label: '8·2 대책',     color: '#ef4444', side: 'left'  },
+  { month: '19-12', fullMonth: '2019-12', label: '12·16 대책',   color: '#ef4444', side: 'left'  },
+  { month: '20-07', fullMonth: '2020-07', label: '7·10 대책',    color: '#ef4444', side: 'left'  },
+  { month: '22-06', fullMonth: '2022-06', label: '규제 완화',     color: '#34d399', side: 'left'  },
+  { month: '25-10', fullMonth: '2025-10', label: '10·15 대출규제',color: '#f59e0b', side: 'right' },
+  { month: '26-05', fullMonth: '2026-05', label: '양도세 면제 종료', color: '#f97316', side: 'right' },
+]
 
 const TIERS = [
   {
@@ -46,11 +53,10 @@ const TIERS = [
   },
 ]
 
-// ── District configs ────────────────────────────────────────────
 export interface DistrictConfig {
   lawdCd:      string
-  name:        string   // e.g. '서초구'
-  description: string   // brief market character
+  name:        string
+  description: string
 }
 
 export const DISTRICT_CONFIGS: Record<string, DistrictConfig> = {
@@ -81,7 +87,6 @@ export const DISTRICT_CONFIGS: Record<string, DistrictConfig> = {
   },
 }
 
-// ── Data shape ──────────────────────────────────────────────────
 interface DistrictData {
   trends:     PriceTrend[]
   priceTiers: { month: string; under15: number; btw1525: number; over25: number; total: number }[]
@@ -90,31 +95,89 @@ interface DistrictData {
   postPolicy: { avgMonthly: number; avgPrice: number; months: number }
 }
 
-// ── Helpers ─────────────────────────────────────────────────────
-function RefLabel({ viewBox, value }: { viewBox?: { x: number; y: number }; value?: string }) {
+// ── Chart helpers ────────────────────────────────────────────────
+
+function RefLabel({
+  viewBox, value, fill = '#f59e0b', yOffset = 12,
+}: {
+  viewBox?: { x: number; y: number }
+  value?: string
+  fill?: string
+  yOffset?: number
+}) {
   if (!viewBox) return null
   return (
-    <text x={viewBox.x + 4} y={12} fill="#f59e0b" fontSize={10} fontWeight={600}>
+    <text x={viewBox.x + 4} y={yOffset} fill={fill} fontSize={10} fontWeight={600}>
       {value}
     </text>
   )
 }
 
-const TOOLTIP = {
+// Renders reference lines for every policy event that falls within the chart's date range.
+function PolicyLines({
+  earliest, latest, alternateY = false,
+}: {
+  earliest: string   // YY-MM
+  latest:   string   // YY-MM
+  alternateY?: boolean
+}) {
+  const visible = POLICY_EVENTS.filter(e => e.month >= earliest && e.month <= latest)
+  return (
+    <>
+      {visible.map((e, i) => (
+        <ReferenceLine
+          key={e.month}
+          x={e.month}
+          stroke={e.color}
+          strokeDasharray="4 2"
+          strokeWidth={1.5}
+          label={
+            <RefLabel
+              value={e.label}
+              fill={e.color}
+              yOffset={alternateY ? (i % 2 === 0 ? 12 : 24) : 12}
+            />
+          }
+        />
+      ))}
+    </>
+  )
+}
+
+const TOOLTIP_STYLE = {
   contentStyle: { background: '#1e293b', border: '1px solid #475569', borderRadius: 8 },
-  labelStyle: { color: '#94a3b8' },
-  itemStyle: { color: '#e2e8f0' },
+  labelStyle:   { color: '#94a3b8' },
+  itemStyle:    { color: '#e2e8f0' },
+}
+
+// Custom tooltip for the volume chart — adds month-over-month percentage.
+function VolumeTooltip({
+  active, payload, label,
+}: {
+  active?: boolean
+  payload?: { payload: { 거래량: number; momPct: number | null } }[]
+  label?: string
+}) {
+  if (!active || !payload?.length) return null
+  const d = payload[0].payload
+  return (
+    <div className="rounded-lg border border-slate-600 px-3 py-2 text-xs" style={{ background: '#1e293b' }}>
+      <p className="text-slate-400 mb-1">{label}</p>
+      <p className="text-slate-100 font-semibold">{d.거래량.toLocaleString()}건</p>
+      {d.momPct !== null && d.momPct !== undefined && (
+        <p className={clsx('mt-0.5', d.momPct >= 0 ? 'text-rose-400' : 'text-emerald-400')}>
+          전월 대비 {d.momPct >= 0 ? '+' : ''}{d.momPct}%
+        </p>
+      )}
+    </div>
+  )
 }
 
 // ── Main component ───────────────────────────────────────────────
 export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
   const [data, setData] = useState<DistrictData | null>(null)
 
-  const config = DISTRICT_CONFIGS[lawdCd] ?? {
-    lawdCd,
-    name:        lawdCd,
-    description: '',
-  }
+  const config = DISTRICT_CONFIGS[lawdCd] ?? { lawdCd, name: lawdCd, description: '' }
 
   useEffect(() => {
     fetch(`/api/gangnam?lawdCd=${lawdCd}`).then(r => r.json()).then(setData)
@@ -126,30 +189,74 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
     </div>
   )
 
-  const volumeChange = data.prePolicy.avgMonthly && data.postPolicy.months > 0
-    ? ((data.postPolicy.avgMonthly - data.prePolicy.avgMonthly) / data.prePolicy.avgMonthly * 100)
-    : null
+  // ── Derived values ─────────────────────────────────────────────
 
-  const priceChange = data.prePolicy.avgPrice && data.postPolicy.months > 0
-    ? ((data.postPolicy.avgPrice - data.prePolicy.avgPrice) / data.prePolicy.avgPrice * 100)
-    : null
-
+  const POLICY_MONTH = '2025-10'
   const policyMonthInData = data.trends.some(t => t.month >= POLICY_MONTH)
 
-  const latestTier = data.priceTiers.at(-1)
-  const over25Pct  = latestTier && latestTier.total > 0
-    ? Math.round(latestTier.over25 / latestTier.total * 100)
+  const preMonths  = data.trends.filter(t => t.month < POLICY_MONTH)
+  const postMonths = data.trends.filter(t => t.month >= POLICY_MONTH)
+
+  const volumeChange = preMonths.length && postMonths.length
+    ? ((postMonths.at(-1)!.transactionCount - preMonths.at(-1)!.transactionCount)
+       / preMonths.at(-1)!.transactionCount * 100)
     : null
 
-  // Chart data
-  const volumeChart = data.trends.map(t => ({ month: t.month.slice(2), 거래량: t.transactionCount }))
-  const priceChart  = data.trends.map(t => ({ month: t.month.slice(2), 평균거래가: t.avgPrice }))
-  const tierChart   = data.priceTiers.map(t => ({
+  // Pre/post policy averages
+  function avg(arr: number[]) {
+    return arr.length ? Math.round(arr.reduce((s, v) => s + v, 0) / arr.length) : 0
+  }
+  const preAvgVolume  = avg(preMonths.map(t => t.transactionCount))
+  const postAvgVolume = avg(postMonths.map(t => t.transactionCount))
+  const preAvgPrice   = avg(preMonths.map(t => t.avgPrice))
+  const postAvgPrice  = avg(postMonths.map(t => t.avgPrice))
+
+  const volumeChangePct = preAvgVolume && postMonths.length
+    ? ((postAvgVolume - preAvgVolume) / preAvgVolume * 100) : null
+  const priceChangePct = preAvgPrice && postMonths.length
+    ? ((postAvgPrice - preAvgPrice) / preAvgPrice * 100) : null
+
+  const latestTier  = data.priceTiers.at(-1)
+  const over25Pct   = latestTier?.total
+    ? Math.round(latestTier.over25 / latestTier.total * 100) : null
+
+  // Month-over-month velocity for the volume chart
+  const volumeChart = data.trends.map((t, i) => {
+    const prev = data.trends[i - 1]
+    const momPct = prev && prev.transactionCount > 0
+      ? Math.round((t.transactionCount - prev.transactionCount) / prev.transactionCount * 100)
+      : null
+    return { month: t.month.slice(2), 거래량: t.transactionCount, momPct }
+  })
+
+  // Latest month MoM change for the KPI card
+  const latestMoM = volumeChart.at(-1)?.momPct ?? null
+
+  // 12-month rolling average for the price chart
+  const priceChart = data.trends.map((t, i) => {
+    const window12 = data.trends.slice(Math.max(0, i - 11), i + 1)
+    const avg12m   = Math.round(window12.reduce((s, w) => s + w.avgPrice, 0) / window12.length)
+    return { month: t.month.slice(2), 평균거래가: t.avgPrice, '12개월평균': avg12m }
+  })
+
+  // Latest price deviation from its 12-month average
+  const latestPrice  = priceChart.at(-1)
+  const priceVs12m   = latestPrice
+    ? Math.round((latestPrice.평균거래가 - latestPrice['12개월평균']) / latestPrice['12개월평균'] * 100)
+    : null
+
+  const tierChart = data.priceTiers.map(t => ({
     month:       t.month.slice(2),
     '15억미만':  t.under15,
     '15–25억':   t.btw1525,
     '25억초과':  t.over25,
   }))
+
+  // X-axis range helpers for reference lines
+  const trendFirst = volumeChart.at(0)?.month ?? '00-01'
+  const trendLast  = volumeChart.at(-1)?.month ?? '99-12'
+  const tierFirst  = tierChart.at(0)?.month  ?? '00-01'
+  const tierLast   = tierChart.at(-1)?.month ?? '99-12'
 
   return (
     <div className="space-y-6">
@@ -192,8 +299,9 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
         </p>
       </div>
 
-      {/* KPI cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* KPI cards — 6 cards including MoM velocity and 12-month deviation */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
           <p className="text-xs text-slate-400 uppercase tracking-wide">규제 전 월평균 거래량</p>
           <p className="text-2xl font-bold text-blue-400 mt-1">
@@ -207,13 +315,13 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
           <p className="text-xs text-slate-400 uppercase tracking-wide">규제 후 월평균 거래량</p>
           <p className={clsx('text-2xl font-bold mt-1',
-            volumeChange !== null && volumeChange < -10 ? 'text-rose-400' : 'text-slate-200')}>
+            volumeChangePct !== null && volumeChangePct < -10 ? 'text-rose-400' : 'text-slate-200')}>
             {data.postPolicy.months > 0 ? `${data.postPolicy.avgMonthly}건` : '—'}
           </p>
           <p className="text-xs mt-1">
-            {volumeChange !== null
-              ? <span className={volumeChange < 0 ? 'text-rose-400' : 'text-emerald-400'}>
-                  {volumeChange > 0 ? '+' : ''}{volumeChange.toFixed(0)}% vs 규제 전
+            {volumeChangePct !== null
+              ? <span className={volumeChangePct < 0 ? 'text-rose-400' : 'text-emerald-400'}>
+                  {volumeChangePct > 0 ? '+' : ''}{volumeChangePct.toFixed(0)}% vs 규제 전
                 </span>
               : <span className="text-slate-500">
                   {policyMonthInData ? `${data.postPolicy.months}개월 평균` : '데이터 대기 중'}
@@ -222,19 +330,44 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
           </p>
         </div>
 
+        {/* NEW: Month-over-month velocity */}
+        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+          <p className="text-xs text-slate-400 uppercase tracking-wide">거래량 전월 대비</p>
+          <p className={clsx('text-2xl font-bold mt-1',
+            latestMoM === null ? 'text-slate-400'
+            : latestMoM >= 0   ? 'text-rose-400'
+            : 'text-emerald-400')}>
+            {latestMoM !== null ? `${latestMoM >= 0 ? '+' : ''}${latestMoM}%` : '—'}
+          </p>
+          <p className="text-xs text-slate-500 mt-1">최신 1개월 기준 · 양수 = 거래 증가</p>
+        </div>
+
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
           <p className="text-xs text-slate-400 uppercase tracking-wide">현재 평균 거래가</p>
           <p className="text-2xl font-bold text-amber-400 mt-1">
             {data.trends.at(-1) ? fmt(data.trends.at(-1)!.avgPrice) : '—'}
           </p>
           <p className="text-xs mt-1">
-            {priceChange !== null
-              ? <span className={priceChange > 0 ? 'text-rose-400' : 'text-emerald-400'}>
-                  {priceChange > 0 ? '+' : ''}{priceChange.toFixed(1)}% 규제 전 대비
+            {priceChangePct !== null
+              ? <span className={priceChangePct > 0 ? 'text-rose-400' : 'text-emerald-400'}>
+                  {priceChangePct > 0 ? '+' : ''}{priceChangePct.toFixed(1)}% 규제 전 대비
                 </span>
               : <span className="text-slate-500">최근 1개월</span>
             }
           </p>
+        </div>
+
+        {/* NEW: Price vs 12-month rolling average */}
+        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+          <p className="text-xs text-slate-400 uppercase tracking-wide">현재가 vs 12개월 평균</p>
+          <p className={clsx('text-2xl font-bold mt-1',
+            priceVs12m === null ? 'text-slate-400'
+            : priceVs12m > 5    ? 'text-rose-400'
+            : priceVs12m < -5   ? 'text-emerald-400'
+            : 'text-slate-200')}>
+            {priceVs12m !== null ? `${priceVs12m >= 0 ? '+' : ''}${priceVs12m}%` : '—'}
+          </p>
+          <p className="text-xs text-slate-500 mt-1">1년 평균 대비 고평가(+) / 저평가(-)</p>
         </div>
 
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
@@ -244,30 +377,30 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
           </p>
           <p className="text-xs text-slate-500 mt-1">최근 1개월 · 2억 한도 적용 구간</p>
         </div>
+
       </div>
 
       {/* Volume + Price charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Volume chart */}
+        {/* Volume chart with MoM tooltip and all policy markers */}
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
           <SectionHeader
             title="월별 거래량"
             badge={<RealBadge source="국토교통부" />}
-            sub="수직선 = 10·15 대출규제 시행일 (2025.10.16)"
+            sub="수직선 = 주요 부동산 정책 시행일 · 막대 위에 올리면 전월 대비 변화율 표시"
           />
           <div className="overflow-x-auto"><div style={{ minWidth: 300 }}>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={volumeChart} margin={{ top: 16, right: 4, left: 0, bottom: 5 }}>
+            <BarChart data={volumeChart} margin={{ top: 20, right: 4, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 10 }} interval="preserveStartEnd" />
               <YAxis width={36} tick={{ fill: '#94a3b8', fontSize: 10 }} />
-              <Tooltip {...TOOLTIP} formatter={(v: number) => [`${v}건`, '거래량']} />
-              <ReferenceLine x={POLICY_X} stroke="#f59e0b" strokeDasharray="4 2" strokeWidth={2}
-                label={<RefLabel value={POLICY_LABEL} />} />
+              <Tooltip content={<VolumeTooltip />} />
+              <PolicyLines earliest={trendFirst} latest={trendLast} alternateY />
               <Bar dataKey="거래량" radius={[2, 2, 0, 0]}>
                 {volumeChart.map(d => (
-                  <Cell key={d.month} fill={d.month >= POLICY_X ? '#f97316' : '#3b82f6'} />
+                  <Cell key={d.month} fill={d.month >= '25-10' ? '#f97316' : '#3b82f6'} />
                 ))}
               </Bar>
             </BarChart>
@@ -279,56 +412,67 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
           </div>
         </div>
 
-        {/* Price trend */}
+        {/* Price chart with 12-month rolling average and policy markers */}
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
           <SectionHeader
             title="월별 평균 거래가"
             badge={<RealBadge source="국토교통부" />}
-            sub="수직선 = 10·15 대출규제 시행일 (2025.10.16)"
+            sub="파란선 = 실제 거래가 · 회색 점선 = 12개월 이동평균"
           />
           <div className="overflow-x-auto"><div style={{ minWidth: 300 }}>
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={priceChart} margin={{ top: 16, right: 4, left: 0, bottom: 5 }}>
+            <LineChart data={priceChart} margin={{ top: 20, right: 4, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 10 }} interval="preserveStartEnd" />
               <YAxis width={48} tick={{ fill: '#94a3b8', fontSize: 10 }}
                 tickFormatter={v => `${(v / 10000).toFixed(0)}억`} />
-              <Tooltip {...TOOLTIP}
-                formatter={(v: number) => [`${fmt(v)}원`, '평균 거래가']} />
-              <ReferenceLine x={POLICY_X} stroke="#f59e0b" strokeDasharray="4 2" strokeWidth={2}
-                label={<RefLabel value={POLICY_LABEL} />} />
+              <Tooltip
+                {...TOOLTIP_STYLE}
+                formatter={(v: number, name: string) => [
+                  `${fmt(v)}원`,
+                  name === '12개월평균' ? '12개월 이동평균' : '평균 거래가',
+                ]}
+              />
+              <PolicyLines earliest={trendFirst} latest={trendLast} alternateY />
               <Line type="monotone" dataKey="평균거래가" stroke="#3b82f6"
                 strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+              <Line type="monotone" dataKey="12개월평균" stroke="#64748b"
+                strokeWidth={1.5} strokeDasharray="5 3" dot={false} />
             </LineChart>
           </ResponsiveContainer>
           </div></div>
         </div>
       </div>
 
-      {/* Price tier stacked bar */}
+      {/* Price tier stacked bar with full historical policy markers */}
       <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
         <SectionHeader
           title="월별 거래 가격대 분포 — 대출규제 구간별"
           badge={<RealBadge source="국토교통부" />}
-          sub="10·15 대책 이후 25억 초과(2억 한도) 구간 거래 비중 변화를 확인합니다"
+          sub="수직선 = 주요 정책 시행일 (적색=규제 강화, 녹색=규제 완화, 황색=현행 대출상한제)"
         />
         <div className="overflow-x-auto"><div style={{ minWidth: 400 }}>
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={tierChart} margin={{ top: 16, right: 4, left: 0, bottom: 5 }}>
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={tierChart} margin={{ top: 28, right: 4, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
             <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 10 }} interval="preserveStartEnd" />
             <YAxis width={36} tick={{ fill: '#94a3b8', fontSize: 10 }} />
-            <Tooltip {...TOOLTIP} />
+            <Tooltip {...TOOLTIP_STYLE} />
             <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
-            <ReferenceLine x={POLICY_X} stroke="#f59e0b" strokeDasharray="4 2" strokeWidth={2}
-              label={<RefLabel value={POLICY_LABEL} />} />
+            <PolicyLines earliest={tierFirst} latest={tierLast} alternateY />
             <Bar dataKey="15억미만" stackId="tier" fill="#34d399" />
             <Bar dataKey="15–25억"  stackId="tier" fill="#f59e0b" />
             <Bar dataKey="25억초과" stackId="tier" fill="#f87171" radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
         </div></div>
-        <p className="text-[10px] text-slate-600 mt-2">
+        <div className="flex flex-wrap gap-4 mt-2 text-[10px] text-slate-500">
+          <span><span className="inline-block w-3 h-0.5 bg-red-500 mr-1 align-middle" />규제 강화 (8·2, 12·16, 7·10)</span>
+          <span><span className="inline-block w-3 h-0.5 bg-emerald-500 mr-1 align-middle" />규제 완화 (2022.06)</span>
+          <span><span className="inline-block w-3 h-0.5 bg-amber-400 mr-1 align-middle" />현행 10·15 대출규제</span>
+          <span><span className="inline-block w-3 h-0.5 bg-orange-400 mr-1 align-middle" />양도세 면제 종료 (2026.05)</span>
+        </div>
+        <p className="text-[10px] text-slate-600 mt-1">
           15억 = 주담대 6억 한도 구간 경계 · 25억 = 주담대 2억 한도 구간 경계
         </p>
       </div>
@@ -362,9 +506,9 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
                     {data.postPolicy.months > 0 ? `${data.postPolicy.avgMonthly}건` : '—'}
                   </td>
                   <td className="py-3 text-right">
-                    {volumeChange !== null
-                      ? <span className={clsx('font-semibold', volumeChange < 0 ? 'text-rose-400' : 'text-emerald-400')}>
-                          {volumeChange > 0 ? '+' : ''}{volumeChange.toFixed(0)}%
+                    {volumeChangePct !== null
+                      ? <span className={clsx('font-semibold', volumeChangePct < 0 ? 'text-rose-400' : 'text-emerald-400')}>
+                          {volumeChangePct > 0 ? '+' : ''}{volumeChangePct.toFixed(0)}%
                         </span>
                       : <span className="text-slate-500">—</span>}
                   </td>
@@ -376,9 +520,9 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
                     {data.postPolicy.months > 0 ? `${fmt(data.postPolicy.avgPrice)}원` : '—'}
                   </td>
                   <td className="py-3 text-right">
-                    {priceChange !== null
-                      ? <span className={priceChange > 0 ? 'text-rose-400' : 'text-emerald-400'}>
-                          {priceChange > 0 ? '+' : ''}{priceChange.toFixed(1)}%
+                    {priceChangePct !== null
+                      ? <span className={priceChangePct > 0 ? 'text-rose-400' : 'text-emerald-400'}>
+                          {priceChangePct > 0 ? '+' : ''}{priceChangePct.toFixed(1)}%
                         </span>
                       : <span className="text-slate-500">—</span>}
                   </td>
@@ -389,7 +533,6 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
           {!policyMonthInData && (
             <p className="text-xs text-slate-500 mt-3">
               규제 시행일(2025년 10월) 이후 데이터가 아직 로드되지 않았습니다.
-              히스토리 백필이 완료되면 규제 후 수치가 표시됩니다.
             </p>
           )}
         </div>
