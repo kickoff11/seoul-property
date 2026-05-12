@@ -467,7 +467,7 @@ export default function RealityPage() {
         <SectionHeader
           title="호가-실거래가 갭 추이"
           badge={<EstBadge note="호가 데이터 공개 API 없음 — KB부동산 기반 추정" />}
-          sub="갭이 클수록 셀러 희망가와 실제 거래 가능 가격의 차이가 큼. 정상 시장 기준: 2% 이하"
+          sub="갭이 클수록 셀러 희망가와 실제 거래 가능 가격의 차이가 큼. 정상 시장 기준: 2% 이하 · 추정 근거: 호가 공개 API 없음 — KB부동산 호가지수와 국토교통부 실거래가 비교로 산출, 실제 호가와 ±3%p 오차 가능"
         />
         <div className="overflow-x-auto"><div style={{ minWidth: 320 }}>
         <ResponsiveContainer width="100%" height={220}>
@@ -500,7 +500,7 @@ export default function RealityPage() {
         <SectionHeader
           title="구별 호가-실거래 갭 — 지역별 성격 차이"
           badge={<EstBadge note="호가 데이터 공개 API 없음 — KB부동산 호가지수 기반 추정. 실제 호가와 ±3%p 오차 가능" />}
-          sub="현재 갭(진한 막대) vs 2023년 최고점 갭(연한 막대). 정상 시장 기준선: 2%"
+          sub="현재 갭(진한 막대) vs 2023년 최고점 갭(연한 막대). 정상 시장 기준선: 2% · 추정 근거: 호가 공개 API 없음 — KB부동산 호가지수 기반 산출, 오차 ±3%p"
         />
 
         {/* Key insight — reframed */}
