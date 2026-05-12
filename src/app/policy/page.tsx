@@ -156,7 +156,7 @@ export default function PolicyPage() {
           <div>
             <SectionHeader
               title="가격 하방 압력 정책 (무주택자 관점: 기다릴 유인)"
-              badge={<EstBadge note="효과 추정" />}
+              badge={<EstBadge note="정책의 가격 영향 방향 및 효과 시점은 분석가 추정 — 실제 결과는 금리·거시 환경에 따라 다를 수 있음" />}
               sub="이 정책들이 효과를 내면 가격이 조정될 수 있습니다"
             />
             <div className="space-y-3">
@@ -183,7 +183,7 @@ export default function PolicyPage() {
         <SectionHeader
           title="정책 효과 타임라인"
           sub="정책이 실제 가격·거래량에 반영되는 시점 추정"
-          badge={<EstBadge note="추정" />}
+          badge={<EstBadge note="효과 발현 시기는 추정 — 정책 집행 강도·금리·거시 변수에 따라 크게 달라질 수 있음" />}
         />
         <div className="overflow-x-auto">
           <table className="w-full text-xs">

@@ -212,7 +212,7 @@ export default function RealityPage() {
         <div className="flex items-start justify-between mb-3">
           <SectionHeader
             title="월별 서울 아파트 매매 거래량"
-            badge={data.volumeIsReal ? <RealBadge source="국토교통부" /> : <EstBadge />}
+            badge={data.volumeIsReal ? <RealBadge source="국토교통부" /> : <EstBadge note="국토교통부 API 일일 할당량 소진 — 실제 패턴 기반 모의 데이터 표시 중. 자정 KST 이후 실데이터로 자동 전환" />}
             sub={volumeView === 'total'
               ? '평년 기준선(6,500건) 대비 현재 거래량 수준'
               : '구별 월간 거래량 — 색상 강도 = 거래 건수'}
@@ -499,7 +499,7 @@ export default function RealityPage() {
       <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
         <SectionHeader
           title="구별 호가-실거래 갭 — 지역별 성격 차이"
-          badge={<EstBadge note="호가 데이터 공개 API 없음" />}
+          badge={<EstBadge note="호가 데이터 공개 API 없음 — KB부동산 호가지수 기반 추정. 실제 호가와 ±3%p 오차 가능" />}
           sub="현재 갭(진한 막대) vs 2023년 최고점 갭(연한 막대). 정상 시장 기준선: 2%"
         />
 

@@ -136,7 +136,7 @@ export default function TimingPage() {
           <SectionHeader
             title="지금 사면 위험한 이유"
             sub="이 신호들이 개선되면 더 좋은 가격에 살 수 있습니다"
-            badge={<EstBadge note="일부 항목 추정" />}
+            badge={<EstBadge note="호가갭·매수심리·PIR은 KB부동산·통계청 보고서 기반 추정 / 거래량·금리는 실측" />}
           />
           <div className="space-y-3">
             {data.buyRiskSignals.map(s => <SignalCard key={s.id} signal={s} />)}
@@ -148,7 +148,7 @@ export default function TimingPage() {
           <SectionHeader
             title="기다리면 위험한 이유"
             sub="이 신호들이 강해지면 지금 움직이는 게 나을 수 있습니다"
-            badge={<EstBadge note="일부 항목 추정" />}
+            badge={<EstBadge note="호가갭·매수심리·PIR은 KB부동산·통계청 보고서 기반 추정 / 거래량·금리는 실측" />}
           />
           <div className="space-y-3">
             {data.waitRiskSignals.map(s => <SignalCard key={s.id} signal={s} />)}
@@ -187,7 +187,7 @@ export default function TimingPage() {
         <SectionHeader
           title="세 가지 시나리오"
           sub="어떤 시나리오가 현실이 되느냐에 따라 매수 전략이 달라집니다. 확률은 현재 데이터 기반 추정치이며 바뀔 수 있습니다."
-          badge={<EstBadge note="시나리오 확률 추정" />}
+          badge={<EstBadge note="확률 수치(35/30/35%)는 현재 시장 지표 기반 분석가 추정치 — 예측이 아닌 현재 상황의 반영" />}
         />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {data.scenarios.map(s => {

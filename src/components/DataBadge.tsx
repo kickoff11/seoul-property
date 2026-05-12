@@ -45,10 +45,10 @@ export function EstBadge({ note }: EstProps) {
 export function MixedBadge({ note }: MixedProps) {
   return (
     <span
-      title={note ? `혼합 · ${note}` : '실제 데이터 + 추정치 혼합'}
+      title={note ? `실측+추정 혼합 · ${note}` : '일부 항목은 실제 데이터, 일부는 추정치'}
       className="inline-flex items-center gap-1 text-[11px] leading-none bg-blue-950 text-blue-400 border border-blue-800 px-1.5 py-0.5 rounded font-medium cursor-default select-none"
     >
-      <span className="text-[8px]">◑</span>혼합
+      <span className="text-[8px]">◑</span>실측+추정
     </span>
   )
 }
