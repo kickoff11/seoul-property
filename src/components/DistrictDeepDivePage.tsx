@@ -15,11 +15,11 @@ import clsx from 'clsx'
 // Short-form month is the x-axis key (YY-MM); fullMonth is used to
 // decide which events fall within a chart's visible date range.
 const POLICY_EVENTS = [
-  { month: '17-08', fullMonth: '2017-08', label: '8·2 대책',     color: '#ef4444', side: 'left'  },
-  { month: '19-12', fullMonth: '2019-12', label: '12·16 대책',   color: '#ef4444', side: 'left'  },
-  { month: '20-07', fullMonth: '2020-07', label: '7·10 대책',    color: '#ef4444', side: 'left'  },
-  { month: '22-06', fullMonth: '2022-06', label: '규제 완화',     color: '#34d399', side: 'left'  },
-  { month: '25-10', fullMonth: '2025-10', label: '10·15 대출규제',color: '#f59e0b', side: 'right' },
+  { month: '17-08', fullMonth: '2017-08', label: '8·2 대책',        color: '#ef4444', side: 'left'  },
+  { month: '19-12', fullMonth: '2019-12', label: '12·16 대책',      color: '#ef4444', side: 'left'  },
+  { month: '20-07', fullMonth: '2020-07', label: '7·10 대책',       color: '#ef4444', side: 'left'  },
+  { month: '22-06', fullMonth: '2022-06', label: '규제 완화',        color: '#34d399', side: 'left'  },
+  { month: '25-10', fullMonth: '2025-10', label: '10·15 대출규제',   color: '#f59e0b', side: 'right' },
   { month: '26-05', fullMonth: '2026-05', label: '양도세 면제 종료', color: '#f97316', side: 'right' },
 ]
 
@@ -113,35 +113,28 @@ function RefLabel({
   )
 }
 
-// Renders reference lines for every policy event that falls within the chart's date range.
-function PolicyLines({
-  earliest, latest, alternateY = false,
-}: {
-  earliest: string   // YY-MM
-  latest:   string   // YY-MM
-  alternateY?: boolean
-}) {
-  const visible = POLICY_EVENTS.filter(e => e.month >= earliest && e.month <= latest)
-  return (
-    <>
-      {visible.map((e, i) => (
-        <ReferenceLine
-          key={e.month}
-          x={e.month}
-          stroke={e.color}
-          strokeDasharray="4 2"
-          strokeWidth={1.5}
-          label={
-            <RefLabel
-              value={e.label}
-              fill={e.color}
-              yOffset={alternateY ? (i % 2 === 0 ? 12 : 24) : 12}
-            />
-          }
-        />
-      ))}
-    </>
-  )
+// Returns ReferenceLine elements for policy events within a chart's date range.
+// Must be spread as {...policyLines(...)} pattern — Recharts requires ReferenceLine
+// to be direct children of the chart, not wrapped in a custom component.
+function policyLines(earliest: string, latest: string, alternateY = false) {
+  return POLICY_EVENTS
+    .filter(e => e.month >= earliest && e.month <= latest)
+    .map((e, i) => (
+      <ReferenceLine
+        key={e.month}
+        x={e.month}
+        stroke={e.color}
+        strokeDasharray="4 2"
+        strokeWidth={1.5}
+        label={
+          <RefLabel
+            value={e.label}
+            fill={e.color}
+            yOffset={alternateY ? (i % 2 === 0 ? 12 : 24) : 12}
+          />
+        }
+      />
+    ))
 }
 
 const TOOLTIP_STYLE = {
@@ -397,7 +390,7 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
               <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 10 }} interval="preserveStartEnd" />
               <YAxis width={36} tick={{ fill: '#94a3b8', fontSize: 10 }} />
               <Tooltip content={<VolumeTooltip />} />
-              <PolicyLines earliest={trendFirst} latest={trendLast} alternateY />
+              {policyLines(trendFirst, trendLast, true)}
               <Bar dataKey="거래량" radius={[2, 2, 0, 0]}>
                 {volumeChart.map(d => (
                   <Cell key={d.month} fill={d.month >= '25-10' ? '#f97316' : '#3b82f6'} />
@@ -433,7 +426,7 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
                   name === '12개월평균' ? '12개월 이동평균' : '평균 거래가',
                 ]}
               />
-              <PolicyLines earliest={trendFirst} latest={trendLast} alternateY />
+              {policyLines(trendFirst, trendLast, true)}
               <Line type="monotone" dataKey="평균거래가" stroke="#3b82f6"
                 strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
               <Line type="monotone" dataKey="12개월평균" stroke="#64748b"
@@ -459,7 +452,7 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
             <YAxis width={36} tick={{ fill: '#94a3b8', fontSize: 10 }} />
             <Tooltip {...TOOLTIP_STYLE} />
             <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
-            <PolicyLines earliest={tierFirst} latest={tierLast} alternateY />
+            {policyLines(tierFirst, tierLast, true)}
             <Bar dataKey="15억미만" stackId="tier" fill="#34d399" />
             <Bar dataKey="15–25억"  stackId="tier" fill="#f59e0b" />
             <Bar dataKey="25억초과" stackId="tier" fill="#f87171" radius={[2, 2, 0, 0]} />

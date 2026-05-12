@@ -76,8 +76,8 @@ export function isCached(lawdCd: string, dealYmd: string): boolean {
     .prepare('SELECT fetched_at FROM fetch_log WHERE lawd_cd = ? AND deal_ymd = ?')
     .get(lawdCd, dealYmd) as { fetched_at: string } | undefined
   if (!row) return false
-  // Treat entries older than 24 h as stale
-  return Date.now() - new Date(row.fetched_at).getTime() < 86_400_000
+  // Treat entries older than 1 h as stale
+  return Date.now() - new Date(row.fetched_at).getTime() < 3_600_000
 }
 
 // ── Writes ─────────────────────────────────────────────────────
@@ -294,7 +294,7 @@ export function getMedianTransactionPrice(recentMonths = 3): number | null {
 export function getCachedDistricts(dealYmd: string): Set<string> {
   const rows = getDb()
     .prepare(`SELECT lawd_cd FROM fetch_log WHERE deal_ymd = ?
-              AND fetched_at > datetime('now', '-24 hours')`)
+              AND fetched_at > datetime('now', '-1 hours')`)
     .all(dealYmd) as { lawd_cd: string }[]
   return new Set(rows.map(r => r.lawd_cd))
 }

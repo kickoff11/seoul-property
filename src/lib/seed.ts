@@ -16,7 +16,7 @@ import { fetchTransactionsFromApi } from './molit-api'
 import { getCachedDistricts, saveTransactions, getTotalCount } from './db'
 import { SEOUL_DISTRICTS } from './seoul-districts'
 
-const REFRESH_INTERVAL_MS = 60 * 60 * 1_000
+const REFRESH_INTERVAL_MS = 30 * 60 * 1_000   // 30 minutes
 const FAST_MONTHS         = 12    // initial fast seed depth
 const HISTORY_MONTHS      = 120   // target history for heatmap (10 years)
 const FAST_CONCURRENCY    = 5     // districts per batch during fast seed (avoids MOLIT 429s)
@@ -47,12 +47,12 @@ export function ensureSeeded(): void {
     return
   }
 
-  // Warm DB: hourly refresh of last 2 months
+  // Warm DB: refresh last 2 months silently — does NOT set activeSeed so the
+  // dashboard spinner never shows for routine background refreshes.
   if (Date.now() - lastRefreshedAt > REFRESH_INTERVAL_MS) {
     lastRefreshedAt = Date.now()
-    activeSeed = seedMonths(2, FAST_CONCURRENCY)
+    seedMonths(2, FAST_CONCURRENCY)
       .catch(err => console.error('[seed] refresh failed', err))
-      .finally(() => { activeSeed = null })
   }
 }
 
