@@ -169,7 +169,7 @@ export default function SupplyDemandPage() {
           <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
             <SectionHeader
               title="매물 공급 강도 추이 — 10년 (월 거래량 vs 활성 매물)"
-              sub="막대: 서울 아파트 월평균 거래 건수 (2026년은 4월 실측) · 선: 활성 매물 수 (5월 기준 스냅샷, 2021년부터)"
+              sub="막대: 서울 아파트 월평균 거래 건수 (2026년은 4월 실측) · 선: 활성 매물 수 (5월 기준 스냅샷, 2021년부터) · 출처: 거래량 = 국토교통부 실거래 확인 / 활성 매물 = 네이버부동산 보도 기반 (2021년 이전 데이터 없음) / 2025년 거래량은 연간 추정치"
               badge={<MixedBadge note="거래: 국토교통부 실거래 (확인) · 매물: 네이버부동산 보도 (2021~)" />}
             />
             <div className="overflow-x-auto"><div style={{ minWidth: 480 }}>
@@ -238,7 +238,7 @@ export default function SupplyDemandPage() {
             <div className="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-xl p-5">
               <SectionHeader title="연도별 서울 아파트 입주 물량"
                 badge={<MixedBadge note="실적: 국토교통부 · 전망: 부동산R114 추정" />}
-                sub="진한 막대 = 실적 · 흐린 막대 = 추정 · 점선 = 수요 기준선 (37,000세대)" />
+                sub="진한 막대 = 국토교통부 확인 실적 · 흐린 막대 = 부동산R114 추정 전망 · 점선 = 수요 기준선 (37,000세대)" />
               <div className="overflow-x-auto"><div style={{ minWidth: 320 }}>
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={supplyChartData} margin={{ top: 5, right: 5, left: 20, bottom: 5 }}>
@@ -288,7 +288,8 @@ export default function SupplyDemandPage() {
           <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
             <div className="p-4 border-b border-slate-700">
               <SectionHeader title="주요 사업지 현황"
-                badge={<MixedBadge note="확정 분양가: 실제 / 사업 현황: 공시자료" />} />
+                badge={<MixedBadge note="확정 분양가: 실제 / 사업 현황: 공시자료" />}
+                sub="분양가 확정 단지는 실제 공시 기반 · 조합 구성·착공 등 사업 현황은 공시자료 기반이며 변경될 수 있음" />
               <div className="flex flex-wrap gap-2">
                 {guList.map(g => (
                   <button key={g} onClick={() => setGuFilter(g)}
