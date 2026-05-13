@@ -97,25 +97,40 @@ interface DistrictData {
 
 // ── Chart helpers ────────────────────────────────────────────────
 
+// Uses <foreignObject> so the label text is HTML — Google Translate can read it,
+// unlike SVG <text> elements which Translate ignores.
+// alignRight=true flips the label to the LEFT of the line (prevents edge clipping).
 function RefLabel({
-  viewBox, value, fill = '#f59e0b', yOffset = 12,
+  viewBox, value, fill = '#f59e0b', yOffset = 12, alignRight = false,
 }: {
   viewBox?: { x: number; y: number }
   value?: string
   fill?: string
   yOffset?: number
+  alignRight?: boolean
 }) {
   if (!viewBox) return null
+  const w = 120
+  const x = alignRight ? viewBox.x - w - 2 : viewBox.x + 4
   return (
-    <text x={viewBox.x + 4} y={yOffset} fill={fill} fontSize={10} fontWeight={600}>
-      {value}
-    </text>
+    <foreignObject x={x} y={yOffset - 12} width={w} height={18} overflow="visible">
+      <span style={{
+        display: 'block',
+        color: fill,
+        fontSize: 10,
+        fontWeight: 600,
+        whiteSpace: 'nowrap',
+        textAlign: alignRight ? 'right' : 'left',
+      }}>
+        {value}
+      </span>
+    </foreignObject>
   )
 }
 
 // Returns ReferenceLine elements for policy events within a chart's date range.
-// Must be spread as {...policyLines(...)} pattern — Recharts requires ReferenceLine
-// to be direct children of the chart, not wrapped in a custom component.
+// Recharts requires ReferenceLine to be direct children of the chart — do not
+// wrap this call in a custom component or Recharts will ignore the lines.
 function policyLines(earliest: string, latest: string, alternateY = false) {
   return POLICY_EVENTS
     .filter(e => e.month >= earliest && e.month <= latest)
@@ -131,6 +146,7 @@ function policyLines(earliest: string, latest: string, alternateY = false) {
             value={e.label}
             fill={e.color}
             yOffset={alternateY ? (i % 2 === 0 ? 12 : 24) : 12}
+            alignRight={e.side === 'right'}
           />
         }
       />
