@@ -90,7 +90,7 @@ export const DISTRICT_CONFIGS: Record<string, DistrictConfig> = {
 interface DistrictData {
   trends:     PriceTrend[]
   priceTiers: { month: string; under15: number; btw1525: number; over25: number; total: number }[]
-  topApts:    { aptName: string; count: number; avgAmount: number; avgPricePerM2: number; maxAmount: number }[]
+  topApts:    { aptName: string; countBefore: number; countAfter: number; avgAmount: number; avgPricePerM2: number; maxAmount: number }[]
   prePolicy:  { avgMonthly: number; avgPrice: number; months: number }
   postPolicy: { avgMonthly: number; avgPrice: number; months: number }
 }
@@ -551,42 +551,56 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
       {data.topApts.length > 0 && (
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
           <SectionHeader
-            title={`${config.name} 주요 단지 거래 현황`}
+            title={`${config.name} 주요 단지 — 10·15 규제 전후 거래량 비교`}
             badge={<RealBadge source="국토교통부" />}
-            sub="최근 24개월 거래량 기준 상위 단지"
+            sub="규제 전: 2023년 10월 ~ 2025년 9월 (24개월) · 규제 후: 2025년 10월 ~ 현재 · 규제 전 거래량 순 정렬"
           />
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-slate-700">
                   <th className="py-2 pr-3 text-left text-slate-400 font-semibold">단지명</th>
-                  <th className="py-2 pr-3 text-right text-slate-400 font-semibold">거래건수</th>
-                  <th className="py-2 pr-3 text-right text-slate-400 font-semibold">평균 거래가</th>
+                  <th className="py-2 pr-3 text-right text-slate-400 font-semibold">규제 전</th>
+                  <th className="py-2 pr-3 text-right text-slate-400 font-semibold">규제 후</th>
+                  <th className="py-2 pr-3 text-right text-slate-400 font-semibold">변화</th>
                   <th className="py-2 pr-3 text-right text-slate-400 font-semibold">최고 거래가</th>
                   <th className="py-2 text-right text-slate-400 font-semibold">평균 m²당</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">
-                {data.topApts.map(apt => (
-                  <tr key={apt.aptName} className="hover:bg-slate-700/30 transition-colors">
-                    <td className="py-2 pr-3 font-medium text-slate-200">{apt.aptName}</td>
-                    <td className="py-2 pr-3 text-right text-slate-300">{apt.count}건</td>
-                    <td className="py-2 pr-3 text-right text-amber-400">{fmt(apt.avgAmount)}원</td>
-                    <td className={clsx('py-2 pr-3 text-right',
-                      apt.maxAmount >= 250000 ? 'text-rose-400' : 'text-slate-300')}>
-                      {fmt(apt.maxAmount)}원
-                      {apt.maxAmount >= 250000 && (
-                        <span className="ml-1 text-[9px] text-rose-500">2억 한도</span>
-                      )}
-                    </td>
-                    <td className="py-2 text-right text-slate-400">{fmtPricePerM2(apt.avgPricePerM2)}</td>
-                  </tr>
-                ))}
+                {data.topApts.map(apt => {
+                  const changePct = apt.countBefore > 0
+                    ? Math.round((apt.countAfter - apt.countBefore) / apt.countBefore * 100)
+                    : null
+                  return (
+                    <tr key={apt.aptName} className="hover:bg-slate-700/30 transition-colors">
+                      <td className="py-2 pr-3 font-medium text-slate-200">{apt.aptName}</td>
+                      <td className="py-2 pr-3 text-right text-blue-400">{apt.countBefore}건</td>
+                      <td className="py-2 pr-3 text-right text-orange-400">{apt.countAfter}건</td>
+                      <td className="py-2 pr-3 text-right">
+                        {changePct !== null
+                          ? <span className={changePct < 0 ? 'text-rose-400 font-semibold' : 'text-emerald-400'}>
+                              {changePct > 0 ? '+' : ''}{changePct}%
+                            </span>
+                          : <span className="text-slate-600">—</span>}
+                      </td>
+                      <td className={clsx('py-2 pr-3 text-right',
+                        apt.maxAmount >= 250000 ? 'text-rose-400' : 'text-slate-300')}>
+                        {fmt(apt.maxAmount)}원
+                        {apt.maxAmount >= 250000 && (
+                          <span className="ml-1 text-[9px] text-rose-500">2억 한도</span>
+                        )}
+                      </td>
+                      <td className="py-2 text-right text-slate-400">{fmtPricePerM2(apt.avgPricePerM2)}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
           <p className="text-[10px] text-slate-600 mt-2">
-            최고 거래가 25억원 이상 단지는 주담대 한도 2억원(10·15 대책) 구간에 해당
+            규제 전 거래량이 많았으나 규제 후 급감한 단지 = 대출 의존도 높은 수요층이 주요 매수자였을 가능성 ·
+            최고 거래가 25억원 이상 단지는 주담대 한도 2억원(10·15 대책) 구간
           </p>
         </div>
       )}

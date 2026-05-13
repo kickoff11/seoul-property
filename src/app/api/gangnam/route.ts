@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const trendRows  = getMonthlyTrends(lawdCd)
   const trends     = buildTrends(trendRows)
   const priceTiers = getDistrictPriceTiersByMonth(lawdCd)
-  const topApts    = getDistrictTopApts(lawdCd, 12).map(a => ({
+  const topApts    = getDistrictTopApts(lawdCd, POLICY_MONTH, 12).map(a => ({
     ...a,
     avgAmount:     Math.round(a.avgAmount),
     avgPricePerM2: Math.round(a.avgPricePerM2),

@@ -319,23 +319,46 @@ export function getDistrictPriceTiersByMonth(lawdCd: string): {
   `).all(lawdCd) as { month: string; under15: number; btw1525: number; over25: number; total: number }[]
 }
 
-/** Top apartments in a district by transaction count, within the last `months` months. */
-export function getDistrictTopApts(lawdCd: string, limit = 12, months = 24): {
-  aptName: string; count: number; avgAmount: number; avgPricePerM2: number; maxAmount: number
+/**
+ * Top apartments split by pre/post a policy date.
+ * `policyYm` format: 'YYYY-MM' (e.g. '2025-10').
+ * Window: 24 months before the policy through today.
+ * Sorted by pre-policy volume so the busiest-before complexes appear first.
+ */
+export function getDistrictTopApts(
+  lawdCd: string,
+  policyYm: string,
+  limit = 12,
+): {
+  aptName: string
+  countBefore: number
+  countAfter: number
+  avgAmount: number
+  maxAmount: number
+  avgPricePerM2: number
 }[] {
-  const cutoff = new Date()
-  cutoff.setMonth(cutoff.getMonth() - months)
+  const policyDate = `${policyYm}-01`
+  const cutoff = new Date(`${policyYm}-01`)
+  cutoff.setMonth(cutoff.getMonth() - 24)
   const cutoffStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-01`
+
   return getDb().prepare(`
-    SELECT apt_name AS aptName, COUNT(*) AS count,
-      AVG(amount) AS avgAmount, AVG(price_per_m2) AS avgPricePerM2,
-      MAX(amount) AS maxAmount
+    SELECT
+      apt_name          AS aptName,
+      SUM(CASE WHEN deal_date < ?  THEN 1 ELSE 0 END) AS countBefore,
+      SUM(CASE WHEN deal_date >= ? THEN 1 ELSE 0 END) AS countAfter,
+      AVG(amount)        AS avgAmount,
+      MAX(amount)        AS maxAmount,
+      AVG(price_per_m2)  AS avgPricePerM2
     FROM transactions
     WHERE lawd_cd = ? AND deal_date >= ?
     GROUP BY apt_name
-    ORDER BY count DESC
+    ORDER BY countBefore DESC
     LIMIT ?
-  `).all(lawdCd, cutoffStr, limit) as { aptName: string; count: number; avgAmount: number; avgPricePerM2: number; maxAmount: number }[]
+  `).all(policyDate, policyDate, lawdCd, cutoffStr, limit) as {
+    aptName: string; countBefore: number; countAfter: number
+    avgAmount: number; maxAmount: number; avgPricePerM2: number
+  }[]
 }
 
 export function getCachedApi<T>(key: string, maxAgeMs: number): T | null {
