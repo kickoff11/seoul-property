@@ -319,20 +319,23 @@ export function getDistrictPriceTiersByMonth(lawdCd: string): {
   `).all(lawdCd) as { month: string; under15: number; btw1525: number; over25: number; total: number }[]
 }
 
-/** Top apartments in a district by transaction count. */
-export function getDistrictTopApts(lawdCd: string, limit = 12): {
+/** Top apartments in a district by transaction count, within the last `months` months. */
+export function getDistrictTopApts(lawdCd: string, limit = 12, months = 24): {
   aptName: string; count: number; avgAmount: number; avgPricePerM2: number; maxAmount: number
 }[] {
+  const cutoff = new Date()
+  cutoff.setMonth(cutoff.getMonth() - months)
+  const cutoffStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-01`
   return getDb().prepare(`
     SELECT apt_name AS aptName, COUNT(*) AS count,
       AVG(amount) AS avgAmount, AVG(price_per_m2) AS avgPricePerM2,
       MAX(amount) AS maxAmount
     FROM transactions
-    WHERE lawd_cd = ?
+    WHERE lawd_cd = ? AND deal_date >= ?
     GROUP BY apt_name
     ORDER BY count DESC
     LIMIT ?
-  `).all(lawdCd, limit) as { aptName: string; count: number; avgAmount: number; avgPricePerM2: number; maxAmount: number }[]
+  `).all(lawdCd, cutoffStr, limit) as { aptName: string; count: number; avgAmount: number; avgPricePerM2: number; maxAmount: number }[]
 }
 
 export function getCachedApi<T>(key: string, maxAgeMs: number): T | null {

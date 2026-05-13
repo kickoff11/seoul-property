@@ -553,7 +553,7 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
           <SectionHeader
             title={`${config.name} 주요 단지 거래 현황`}
             badge={<RealBadge source="국토교통부" />}
-            sub="분석 기간 내 거래량 기준 상위 단지"
+            sub="최근 24개월 거래량 기준 상위 단지"
           />
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
