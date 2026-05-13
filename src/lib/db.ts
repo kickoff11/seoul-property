@@ -333,31 +333,40 @@ export function getDistrictTopApts(
   aptName: string
   countBefore: number
   countAfter: number
-  avgAmount: number
+  monthsBefore: number
+  monthsAfter: number
+  avgAmountBefore: number | null
+  avgAmountAfter: number | null
   maxAmount: number
-  avgPricePerM2: number
 }[] {
   const policyDate = `${policyYm}-01`
   const cutoff = new Date(`${policyYm}-01`)
   cutoff.setMonth(cutoff.getMonth() - 24)
   const cutoffStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-01`
+  const p = policyDate
 
   return getDb().prepare(`
     SELECT
-      apt_name          AS aptName,
+      apt_name AS aptName,
       SUM(CASE WHEN deal_date < ?  THEN 1 ELSE 0 END) AS countBefore,
       SUM(CASE WHEN deal_date >= ? THEN 1 ELSE 0 END) AS countAfter,
-      AVG(amount)        AS avgAmount,
-      MAX(amount)        AS maxAmount,
-      AVG(price_per_m2)  AS avgPricePerM2
+      COUNT(DISTINCT CASE WHEN deal_date < ?
+        THEN deal_year || printf('%02d', deal_month) END) AS monthsBefore,
+      COUNT(DISTINCT CASE WHEN deal_date >= ?
+        THEN deal_year || printf('%02d', deal_month) END) AS monthsAfter,
+      AVG(CASE WHEN deal_date < ?  THEN CAST(amount AS REAL) END) AS avgAmountBefore,
+      AVG(CASE WHEN deal_date >= ? THEN CAST(amount AS REAL) END) AS avgAmountAfter,
+      MAX(amount) AS maxAmount
     FROM transactions
     WHERE lawd_cd = ? AND deal_date >= ?
     GROUP BY apt_name
     ORDER BY countBefore DESC
     LIMIT ?
-  `).all(policyDate, policyDate, lawdCd, cutoffStr, limit) as {
+  `).all(p, p, p, p, p, p, lawdCd, cutoffStr, limit) as {
     aptName: string; countBefore: number; countAfter: number
-    avgAmount: number; maxAmount: number; avgPricePerM2: number
+    monthsBefore: number; monthsAfter: number
+    avgAmountBefore: number | null; avgAmountAfter: number | null
+    maxAmount: number
   }[]
 }
 

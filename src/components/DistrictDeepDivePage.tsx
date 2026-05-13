@@ -90,7 +90,7 @@ export const DISTRICT_CONFIGS: Record<string, DistrictConfig> = {
 interface DistrictData {
   trends:     PriceTrend[]
   priceTiers: { month: string; under15: number; btw1525: number; over25: number; total: number }[]
-  topApts:    { aptName: string; countBefore: number; countAfter: number; avgAmount: number; avgPricePerM2: number; maxAmount: number }[]
+  topApts:    { aptName: string; countBefore: number; countAfter: number; monthsBefore: number; monthsAfter: number; avgAmountBefore: number | null; avgAmountAfter: number | null; maxAmount: number }[]
   prePolicy:  { avgMonthly: number; avgPrice: number; months: number }
   postPolicy: { avgMonthly: number; avgPrice: number; months: number }
 }
@@ -560,38 +560,51 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
               <thead>
                 <tr className="border-b border-slate-700">
                   <th className="py-2 pr-3 text-left text-slate-400 font-semibold">단지명</th>
-                  <th className="py-2 pr-3 text-right text-slate-400 font-semibold">규제 전</th>
-                  <th className="py-2 pr-3 text-right text-slate-400 font-semibold">규제 후</th>
-                  <th className="py-2 pr-3 text-right text-slate-400 font-semibold">변화</th>
-                  <th className="py-2 pr-3 text-right text-slate-400 font-semibold">최고 거래가</th>
-                  <th className="py-2 text-right text-slate-400 font-semibold">평균 m²당</th>
+                  <th className="py-2 pr-3 text-right text-slate-400 font-semibold">규제 전<br/><span className="font-normal text-slate-600">월평균</span></th>
+                  <th className="py-2 pr-3 text-right text-slate-400 font-semibold">규제 후<br/><span className="font-normal text-slate-600">월평균</span></th>
+                  <th className="py-2 pr-3 text-right text-slate-400 font-semibold">거래량<br/><span className="font-normal text-slate-600">변화</span></th>
+                  <th className="py-2 pr-3 text-right text-slate-400 font-semibold">규제 전<br/><span className="font-normal text-slate-600">평균가</span></th>
+                  <th className="py-2 text-right text-slate-400 font-semibold">규제 후<br/><span className="font-normal text-slate-600">평균가</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">
                 {data.topApts.map(apt => {
-                  const changePct = apt.countBefore > 0
-                    ? Math.round((apt.countAfter - apt.countBefore) / apt.countBefore * 100)
+                  const mBefore = apt.monthsBefore || 1
+                  const mAfter  = apt.monthsAfter  || 1
+                  const avgBefore = apt.countBefore / mBefore
+                  const avgAfter  = apt.countAfter  / mAfter
+                  const volChangePct = avgBefore > 0
+                    ? Math.round((avgAfter - avgBefore) / avgBefore * 100)
                     : null
                   return (
                     <tr key={apt.aptName} className="hover:bg-slate-700/30 transition-colors">
-                      <td className="py-2 pr-3 font-medium text-slate-200">{apt.aptName}</td>
-                      <td className="py-2 pr-3 text-right text-blue-400">{apt.countBefore}건</td>
-                      <td className="py-2 pr-3 text-right text-orange-400">{apt.countAfter}건</td>
+                      <td className="py-2 pr-3 font-medium text-slate-200">
+                        {apt.aptName}
+                        {apt.maxAmount >= 250000 && (
+                          <span className="ml-1 text-[9px] text-rose-500">2억한도</span>
+                        )}
+                      </td>
+                      <td className="py-2 pr-3 text-right text-blue-400">
+                        {avgBefore.toFixed(1)}건
+                      </td>
+                      <td className="py-2 pr-3 text-right text-orange-400">
+                        {avgAfter.toFixed(1)}건
+                      </td>
                       <td className="py-2 pr-3 text-right">
-                        {changePct !== null
-                          ? <span className={changePct < 0 ? 'text-rose-400 font-semibold' : 'text-emerald-400'}>
-                              {changePct > 0 ? '+' : ''}{changePct}%
+                        {volChangePct !== null
+                          ? <span className={clsx('font-semibold', volChangePct < 0 ? 'text-rose-400' : 'text-emerald-400')}>
+                              {volChangePct > 0 ? '+' : ''}{volChangePct}%
                             </span>
                           : <span className="text-slate-600">—</span>}
                       </td>
-                      <td className={clsx('py-2 pr-3 text-right',
-                        apt.maxAmount >= 250000 ? 'text-rose-400' : 'text-slate-300')}>
-                        {fmt(apt.maxAmount)}원
-                        {apt.maxAmount >= 250000 && (
-                          <span className="ml-1 text-[9px] text-rose-500">2억 한도</span>
-                        )}
+                      <td className="py-2 pr-3 text-right text-slate-300">
+                        {apt.avgAmountBefore ? fmt(Math.round(apt.avgAmountBefore)) : '—'}
                       </td>
-                      <td className="py-2 text-right text-slate-400">{fmtPricePerM2(apt.avgPricePerM2)}</td>
+                      <td className={clsx('py-2 text-right',
+                        apt.avgAmountAfter && apt.avgAmountAfter < (apt.avgAmountBefore ?? 0)
+                          ? 'text-emerald-400' : 'text-slate-300')}>
+                        {apt.avgAmountAfter ? fmt(Math.round(apt.avgAmountAfter)) : '—'}
+                      </td>
                     </tr>
                   )
                 })}
@@ -599,8 +612,9 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
             </table>
           </div>
           <p className="text-[10px] text-slate-600 mt-2">
-            규제 전 거래량이 많았으나 규제 후 급감한 단지 = 대출 의존도 높은 수요층이 주요 매수자였을 가능성 ·
-            최고 거래가 25억원 이상 단지는 주담대 한도 2억원(10·15 대책) 구간
+            규제 전: 2023년 10월 ~ 2025년 9월 · 규제 후: 2025년 10월 ~ 현재 ·
+            월평균 기준으로 기간 차이 보정 · 규제 후 평균가가 하락한 단지는 초록색 표시 ·
+            2억한도 = 최고 거래가 25억원 이상(10·15 대책 기준)
           </p>
         </div>
       )}
