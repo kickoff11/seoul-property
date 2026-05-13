@@ -325,9 +325,18 @@ export function getDistrictPriceTiersByMonth(lawdCd: string): {
  * Window: 24 months before the policy through today.
  * Sorted by pre-policy volume so the busiest-before complexes appear first.
  */
+/**
+ * Top apartments split symmetrically around a policy date.
+ * `preStart` and `postEnd` define the exact same-length window on each side
+ * (computed by the caller so the window auto-extends each month).
+ * Both dates are 'YYYY-MM-DD' strings; policyDate is the first day of the
+ * policy month (inclusive start of the "after" window).
+ */
 export function getDistrictTopApts(
   lawdCd: string,
-  policyYm: string,
+  policyDate: string,  // '2025-10-01'
+  preStart:   string,  // first day of pre window
+  postEnd:    string,  // first day of month AFTER post window
   limit = 12,
 ): {
   aptName: string
@@ -339,12 +348,7 @@ export function getDistrictTopApts(
   avgAmountAfter: number | null
   maxAmount: number
 }[] {
-  const policyDate = `${policyYm}-01`
-  const cutoff = new Date(`${policyYm}-01`)
-  cutoff.setMonth(cutoff.getMonth() - 24)
-  const cutoffStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-01`
   const p = policyDate
-
   return getDb().prepare(`
     SELECT
       apt_name AS aptName,
@@ -358,11 +362,11 @@ export function getDistrictTopApts(
       AVG(CASE WHEN deal_date >= ? THEN CAST(amount AS REAL) END) AS avgAmountAfter,
       MAX(amount) AS maxAmount
     FROM transactions
-    WHERE lawd_cd = ? AND deal_date >= ?
+    WHERE lawd_cd = ? AND deal_date >= ? AND deal_date < ?
     GROUP BY apt_name
     ORDER BY countBefore DESC
     LIMIT ?
-  `).all(p, p, p, p, p, p, lawdCd, cutoffStr, limit) as {
+  `).all(p, p, p, p, p, p, lawdCd, preStart, postEnd, limit) as {
     aptName: string; countBefore: number; countAfter: number
     monthsBefore: number; monthsAfter: number
     avgAmountBefore: number | null; avgAmountAfter: number | null

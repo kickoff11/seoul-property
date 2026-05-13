@@ -88,11 +88,12 @@ export const DISTRICT_CONFIGS: Record<string, DistrictConfig> = {
 }
 
 interface DistrictData {
-  trends:     PriceTrend[]
-  priceTiers: { month: string; under15: number; btw1525: number; over25: number; total: number }[]
-  topApts:    { aptName: string; countBefore: number; countAfter: number; monthsBefore: number; monthsAfter: number; avgAmountBefore: number | null; avgAmountAfter: number | null; maxAmount: number }[]
-  prePolicy:  { avgMonthly: number; avgPrice: number; months: number }
-  postPolicy: { avgMonthly: number; avgPrice: number; months: number }
+  trends:               PriceTrend[]
+  priceTiers:           { month: string; under15: number; btw1525: number; over25: number; total: number }[]
+  topApts:              { aptName: string; countBefore: number; countAfter: number; monthsBefore: number; monthsAfter: number; avgAmountBefore: number | null; avgAmountAfter: number | null; maxAmount: number }[]
+  topAptsWindowMonths:  number
+  prePolicy:            { avgMonthly: number; avgPrice: number; months: number }
+  postPolicy:           { avgMonthly: number; avgPrice: number; months: number }
 }
 
 // ── Chart helpers ────────────────────────────────────────────────
@@ -553,7 +554,7 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
           <SectionHeader
             title={`${config.name} 주요 단지 — 10·15 규제 전후 거래량 비교`}
             badge={<RealBadge source="국토교통부" />}
-            sub="규제 전: 2023년 10월 ~ 2025년 9월 (24개월) · 규제 후: 2025년 10월 ~ 현재 · 규제 전 거래량 순 정렬"
+            sub={`규제 전 ${data.topAptsWindowMonths}개월 vs 규제 후 ${data.topAptsWindowMonths}개월 동일 기간 비교 · 규제 전 월평균 거래량 순 정렬`}
           />
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
@@ -612,9 +613,8 @@ export default function DistrictDeepDivePage({ lawdCd }: { lawdCd: string }) {
             </table>
           </div>
           <p className="text-[10px] text-slate-600 mt-2">
-            규제 전: 2023년 10월 ~ 2025년 9월 · 규제 후: 2025년 10월 ~ 현재 ·
-            월평균 기준으로 기간 차이 보정 · 규제 후 평균가가 하락한 단지는 초록색 표시 ·
-            2억한도 = 최고 거래가 25억원 이상(10·15 대책 기준)
+            완료된 개월 수 기준 양측 동일 기간 · 매월 자동 확장 ·
+            규제 후 평균가 하락 단지 초록색 표시 · 2억한도 = 최고 거래가 25억 이상(10·15 대책)
           </p>
         </div>
       )}

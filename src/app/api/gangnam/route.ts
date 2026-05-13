@@ -9,20 +9,44 @@ import {
 import { buildTrends } from '@/lib/analysis'
 
 const POLICY_MONTH = '2025-10' // 10·15 대출규제 시행
+const POLICY_DATE  = '2025-10-01'
+
+function fmt2(n: number) { return String(n).padStart(2, '0') }
+
+/** Symmetric window: same number of complete months on each side of the policy. */
+function symmetricWindow(): { preStart: string; postEnd: string; windowMonths: number } {
+  const policyBase = new Date(POLICY_DATE)
+  const now = new Date()
+  // Complete months elapsed since policy month (exclude current partial month)
+  const windowMonths =
+    (now.getFullYear() - policyBase.getFullYear()) * 12 +
+    (now.getMonth()    - policyBase.getMonth())
+
+  const preStartDate = new Date(policyBase)
+  preStartDate.setMonth(preStartDate.getMonth() - windowMonths)
+  const preStart = `${preStartDate.getFullYear()}-${fmt2(preStartDate.getMonth() + 1)}-01`
+
+  const postEndDate = new Date(policyBase)
+  postEndDate.setMonth(postEndDate.getMonth() + windowMonths)
+  const postEnd = `${postEndDate.getFullYear()}-${fmt2(postEndDate.getMonth() + 1)}-01`
+
+  return { preStart, postEnd, windowMonths }
+}
 
 export async function GET(req: NextRequest) {
   ensureSeeded()
 
   const lawdCd = req.nextUrl.searchParams.get('lawdCd') ?? '11680'
+  const { preStart, postEnd, windowMonths } = symmetricWindow()
 
   const trendRows  = getMonthlyTrends(lawdCd)
   const trends     = buildTrends(trendRows)
   const priceTiers = getDistrictPriceTiersByMonth(lawdCd)
-  const topApts    = getDistrictTopApts(lawdCd, POLICY_MONTH, 12).map(a => ({
+  const topApts    = getDistrictTopApts(lawdCd, POLICY_DATE, preStart, postEnd, 12).map(a => ({
     ...a,
-    avgAmount:     Math.round(a.avgAmount),
-    avgPricePerM2: Math.round(a.avgPricePerM2),
-    maxAmount:     Math.round(a.maxAmount),
+    avgAmountBefore: a.avgAmountBefore !== null ? Math.round(a.avgAmountBefore) : null,
+    avgAmountAfter:  a.avgAmountAfter  !== null ? Math.round(a.avgAmountAfter)  : null,
+    maxAmount:       Math.round(a.maxAmount),
   }))
 
   // Pre/post policy comparison
@@ -48,6 +72,7 @@ export async function GET(req: NextRequest) {
     trends,
     priceTiers,
     topApts,
+    topAptsWindowMonths: windowMonths,
     prePolicy,
     postPolicy,
   }, { headers: { 'Cache-Control': 'no-store' } })
